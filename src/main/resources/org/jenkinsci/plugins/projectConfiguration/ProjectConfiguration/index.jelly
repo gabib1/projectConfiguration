@@ -1,0 +1,268 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+<l:layout title="Configuration" secured="true">
+<l:header/>
+    <l:side-panel>
+        <l:tasks>
+            <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Jenkins}"/>
+            <l:task icon="images/24x24/up.gif" href="${rootURL}/job/${it.getJobName()}" title="${%Back to }${it.getJobName()}"/>
+        </l:tasks>
+    </l:side-panel>
+    <l:main-panel>
+        <H1>${it.getJobName()} Configuration</H1>
+            <form action="submit" method="post">
+
+                <table>
+                    <tr>
+                        <f:radioBlock name="whatToConfigure" value="confFile" title="configuration">
+                            <tr>
+                                <f:entry title="">
+                                    <div style="text-decoration: underline">General configuration:</div>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Project name:">
+                                    <f:textbox name="projectName" value="${it.getProjectName()}"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Product name:">
+                                    <f:textbox name="productName" value="${it.getProductName()}"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Running version file:">
+                                    <f:textbox name="idcVersionFilePath" value="${it.getIDCVersionFilePath()}"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Build dir:">
+                                    <f:textbox name="buildDirPath" value="${it.getBuildDirPath()}"/>
+                                </f:entry>
+                            </tr>
+
+                            <tr>
+                                <f:entry title="">
+                                    <div style="text-decoration: underline">Mailing lists:</div>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Regular:">
+                                    <f:textbox name="mailingList" value="${it.getMailingList()}"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Testing:">
+                                    <f:textbox name="mailingListTesting" value="${it.getMailingListTesting()}"/>
+                                </f:entry>
+                            </tr>
+
+                            <tr>
+                                <f:entry title="">
+                                    <div style="text-decoration: underline">Clearcase:</div>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Stream name:">
+                                    <f:textbox name="streamName" value="${it.getStreamName()}"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Clearcase activity:">
+                                    <f:textbox name="ccActivity" value="${it.getCCActivity()}"/>
+                                </f:entry>
+                            </tr>
+
+                            <tr>
+                                <f:entry title="">
+                                    <div style="text-decoration: underline">Release:</div>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Logs:">
+                                    <f:textbox name="logsPath" value="${it.getLogsPath()}"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="RPMS:">
+                                    <f:textbox name="rpmPath" value="${it.getRPMPath()}"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Image:">
+                                    <f:textbox name="imagePath" value="${it.getImagePath()}"/>
+                                </f:entry>
+                            </tr>
+
+                            <tr>
+                                <f:entry title="">
+                                    <div style="text-decoration: underline">Klocwork:</div>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="KW project name:">
+                                    <f:textbox name="kwProjectName" value="${it.getKWProjectName()}"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="KW directory:">
+                                    <f:textbox name="kwDirPath" value="${it.getKWDirPath()}"/>
+                                </f:entry>
+                            </tr>
+                        </f:radioBlock>
+                    </tr>
+                    <tr>
+                        <f:radioBlock name="whatToConfigure" value="schdule" title="scheduler">
+                            <tr>
+                                <f:entry title="Schdules:">
+                                    <f:expandableTextbox name="schedules" value="${it.getSchdules()}"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <form action="removeSchedule" method="post">
+                                    <tr>
+                                        <f:dropdownList name="existingSchedules" title="Existing Schedules:">
+                                          <f:dropdownListBlock title="" value=""/>
+                                          <!-- Loop through available schedules types -->
+                                          <j:forEach var="schedule" items="${it.getActiveSchedules()}" varStatus="loop">
+                                            <f:dropdownListBlock title="${schedule.toString()}" value="${loop.index}"
+                                                                 selected="${schedule!=null}" staplerClass="${schedule.clazz.name}">
+                                            </f:dropdownListBlock>
+                                          </j:forEach>
+                                        </f:dropdownList>
+                                    </tr>
+                                    <tr>
+                                        <f:entry title="" >
+                                            <input type="button" onClick="${it.doRemoveSchedule(schedule)}" value="remove"/>
+                                        </f:entry>
+                                    </tr>
+                                </form>
+                            </tr>
+                            <tr>
+                                <f:entry title="Name:">
+                                    <f:textbox name="scheduleName" value="${it.getJobName()} Daily" 
+                                            style="width: 150px"/>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="">
+                                    <div style="text-decoration: underline">Details:</div>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="Start:">
+                                    <select name="ScheduleTime-hour">
+                                        <option value="00">00</option>
+                                        <option value="01">01</option>
+                                        <option value="02">02</option>
+                                        <option value="03">03</option>
+                                        <option value="04">04</option>
+                                        <option value="05">05</option>
+                                        <option value="06">06</option>
+                                        <option value="07">07</option>
+                                        <option value="08">08</option>
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                    </select>
+                                    <select name="ScheduleTime-minute">
+                                        <option value="00">00</option>
+                                        <option value="05">05</option>
+                                        <option value="10">10</option>
+                                        <option value="15">15</option>
+                                        <option value="20">20</option>
+                                        <option value="25">25</option>
+                                        <option value="30">30</option>
+                                        <option value="35">35</option>
+                                        <option value="40">40</option>
+                                        <option value="45">45</option>
+                                        <option value="50">50</option>
+                                        <option value="55">55</option>
+                                    </select>
+                                    <select name="ScheduleTime-meridiem">
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:radioBlock name="type" value="Daily" checked="true" title="Daily"/>
+                            </tr>
+                            <tr>
+                                <f:radioBlock name="type" value="Weekly" title="Weekly">
+                                    <f:entry title="">
+                                        <f:checkbox value="Sunday" name="Sunday" title="Sunday"/>
+                                    </f:entry>
+                                    <f:entry title="">
+                                        <f:checkbox value="Monday" name="Monday" title="Monday"/>
+                                    </f:entry>
+                                    <f:entry title="">
+                                        <f:checkbox value="Tuesday" name="Tuesday" title="Tuesday"/>
+                                    </f:entry>
+                                    <f:entry title="">
+                                        <f:checkbox value="Wednesday" name="Wednesday" title="Wednesday"/>
+                                    </f:entry>
+                                    <f:entry title="">
+                                        <f:checkbox value="Thursday" name="Thursday" title="Thursday"/>
+                                    </f:entry>
+                                    <f:entry title="">
+                                        <f:checkbox value="Friday" name="Friday" title="Friday"/>
+                                    </f:entry>
+                                    <f:entry title="">
+                                        <f:checkbox value="Saturday" name="Saturday" title="Saturday"/>
+                                    </f:entry>
+                                </f:radioBlock>
+                            </tr>
+                            <tr>
+                                <f:radioBlock name="type" value="Monthly" title="Monthly">
+                                    <f:entry title="">
+                                        <select name="DateOfMonth">
+                                            <option value="01">01</option>
+                                            <option value="02">02</option>
+                                            <option value="03">03</option>
+                                            <option value="04">04</option>
+                                            <option value="05">05</option>
+                                            <option value="06">06</option>
+                                            <option value="07">07</option>
+                                            <option value="08">08</option>
+                                            <option value="09">09</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                            <option value="13">13</option>
+                                            <option value="14">14</option>
+                                            <option value="15">15</option>
+                                            <option value="16">16</option>
+                                            <option value="17">17</option>
+                                            <option value="18">18</option>
+                                            <option value="19">19</option>
+                                            <option value="20">20</option>
+                                            <option value="21">21</option>
+                                            <option value="22">22</option>
+                                            <option value="23">23</option>
+                                            <option value="24">24</option>
+                                            <option value="25">25</option>
+                                            <option value="26">26</option>
+                                            <option value="27">27</option>
+                                            <option value="28">28</option>
+                                        </select>
+                                    </f:entry>
+                                </f:radioBlock>
+                            </tr>
+                    		</f:radioBlock>
+                    </tr>
+                    <f:entry title="" >
+                        <f:submit value="Save"/>
+                    </f:entry>
+                </table>
+            </form>
+<!--        <table>
+            <f:entry title="Enter name:">
+                <f:textbox field="nameTextBox"/>
+            </f:entry>
+            <f:validateButton title="Save" progress="Saving..." method="saveName" with="nameTextBox" value="${%Save}" />
+        </table>
+        <H1>${it.myString}</H1> -->
+    </l:main-panel>
+</l:layout>
+</j:jelly>
