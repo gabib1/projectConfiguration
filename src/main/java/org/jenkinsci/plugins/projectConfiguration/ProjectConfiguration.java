@@ -52,12 +52,11 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     
     public ProjectConfiguration() {
         project = null;
-        mkverConf = new MkverConf("/home/gabi/mkver.conf");
     }
     
     public ProjectConfiguration(AbstractProject<?, ?> project) {
     	this.project = project;
-        mkverConf = new MkverConf("/home/gabi/mkver.conf");
+        mkverConf = new MkverConf("/home/builder/BuildSystem/cc-views/builder_" + project.getName() + "_int/vobs/linux/CI_Conf/mkver.conf");
     }
     
     public String getJobName(){
@@ -66,7 +65,6 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     
     @Override
     public Descriptor<ProjectConfiguration> getDescriptor() {
-        System.out.println("in getDescriptor");
         return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
     
@@ -115,8 +113,6 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
 
         @Override
         public String getDisplayName() {
-            System.out.println("in getDisplayName");
-            System.out.println(clazz.getSimpleName());
             return clazz.getSimpleName();
         }
     }
@@ -212,10 +208,12 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     private boolean CheckBuildPermissions(){
         for ( Permission permission : Permission.getAll())
         {
-            boolean hasBuildPermission = Jenkins.getInstance().hasPermission(permission);
-            if (hasBuildPermission == true)
+            if (permission.name.equals("Build") == true)
             {
-                return true;
+                if (Jenkins.getInstance().hasPermission(permission) == true)
+                {
+                    return true;
+                }
             }
         }
         return false;

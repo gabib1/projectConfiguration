@@ -4,7 +4,6 @@
  */
 package org.jenkinsci.plugins.projectConfiguration;
 
-import org.jenkinsci.plugins.projectConfiguration.ProjectConfiguration;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
