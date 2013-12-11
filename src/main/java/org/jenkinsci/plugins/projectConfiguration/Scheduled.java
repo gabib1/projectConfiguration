@@ -94,7 +94,6 @@ public class Scheduled implements Describable<Scheduled>{
     
     @Override
     public Descriptor<Scheduled> getDescriptor() {
-        System.out.println("in Scheduled getDescriptor");
         return Jenkins.getInstance().getDescriptor(getClass());
     }
     
@@ -104,11 +103,9 @@ public class Scheduled implements Describable<Scheduled>{
         
         public ScheduledDescriptor(Class<? extends Scheduled> clazz) {
             super(clazz);
-            System.out.println("in ScheduledDescriptor");
         }
         
         public String getDisplayName() {
-            System.out.println("in ScheduledDescriptor getDisplayName");
             return clazz.getSimpleName();
         }
     }

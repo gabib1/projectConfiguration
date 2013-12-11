@@ -35,21 +35,25 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     private final AbstractProject<?, ?> project;
     private MkverConf mkverConf;
     
-    public ProjectConfiguration() {
+    public ProjectConfiguration() 
+    {
         project = null;
     }
     
-    public ProjectConfiguration(AbstractProject<?, ?> project) {
+    public ProjectConfiguration(AbstractProject<?, ?> project) 
+    {
     	this.project = project;
         mkverConf = new MkverConf("/home/builder/BuildSystem/cc-views/builder_" + project.getName() + "_int/vobs/linux/CI_Conf/mkver.conf");
     }
     
-    public String getJobName(){
+    public String getJobName()
+    {
         return project.getName();
     }
     
     @Override
-    public Descriptor<ProjectConfiguration> getDescriptor() {
+    public Descriptor<ProjectConfiguration> getDescriptor() 
+    {
         return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
     
@@ -85,7 +89,8 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     }
     
     @Extension
-    public static final class DescriptorImpl extends Descriptor<ProjectConfiguration> {
+    public static final class DescriptorImpl extends Descriptor<ProjectConfiguration> 
+    {
     
         public ListBoxModel doFillSchedulesItems() {
             System.out.println("in doFillSchedulesItems");
@@ -135,7 +140,6 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     // Set a new Corntab entry using TimerTrigger class
     public void doSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
     {
-        String whatToConfigure = req.getParameter("whatToConfigure");
         System.out.println(req.getParameter("checkboxConfFile"));
         System.out.println(req.getParameter("checkboxSave"));
         System.out.println(req.getParameter("removeSchdule"));
@@ -192,8 +196,15 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
     }
     
-    public void doRemoveSchedule(StaplerRequest req, StaplerResponse rsp)    {
-        System.out.println("in doRemoveSchedule");
+    public void doRemoveSchedule(StaplerRequest req, StaplerResponse rsp)    
+    {
+        String scheduleToRemove;
+        try {
+            scheduleToRemove = req.bindJSON(String.class, req.getSubmittedForm().getJSONObject("existingSchedules"));
+            System.out.println(scheduleToRemove);
+        } catch (ServletException ex) {
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     private boolean CheckBuildPermissions(){

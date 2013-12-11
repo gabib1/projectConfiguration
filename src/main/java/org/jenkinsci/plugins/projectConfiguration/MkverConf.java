@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.logging.Logger;
 public class MkverConf 
 {
     private String confFilePath;
+    private String cleartool;
     
     private String projectName;
     private String streamName;
@@ -125,6 +127,11 @@ public class MkverConf
                     int indexOfEquels = line.indexOf('=') + 1;
                     this.buildDirPath = line.substring(indexOfEquels);
                 }
+                else if (line.startsWith("CLEARTOOL=") == true)
+                {
+                    int indexOfEquels = line.indexOf('=') + 1;
+                    this.cleartool = line.substring(indexOfEquels);
+                }
             }
 
             br.close();
@@ -139,17 +146,28 @@ public class MkverConf
     public void saveObjectToFile()
     {
         String line;
+        Process p;
         List<String> newFileContent = new ArrayList<String>();
         
+        String[] clearcaseSetActivityCMD = {this.cleartool, "setact", "-view", 
+            "builder_" + getProjectNameWithoutBashVariables() + "_int", "CQUSR00098872"};
+        String[] clearcaseCheckoutCMD = {this.cleartool, "checkout", "-nc", this.confFilePath};
+        String[] clearcaseCheckinCMD = {this.cleartool, "checkin", "-nc", "-identical", this.confFilePath};
+        String[] clearcaseUnsetActivityCMD = {this.cleartool, "setact", "-none"};
         
 
         try 
         {
+            System.out.println("before clearcaseSetActivityCMD");
+            ProcessBuilder pb = new ProcessBuilder().inheritIO().command(clearcaseSetActivityCMD);
+            File log = new File("/home/builder/log.txt");
+            pb.redirectErrorStream(true);
+            pb.redirectOutput(Redirect.appendTo(log));
+            p = pb.start();
+            System.out.println("after clearcaseSetActivityCMD\nExit value: " + p.waitFor());
+            p = new ProcessBuilder().inheritIO().command(clearcaseCheckoutCMD).start();
+            System.out.println("after clearcaseCheckoutCMD\nExit value: " + p.waitFor());
             
-            Runtime.getRuntime().exec("/opt/rational/clearcase/bin/cleartool setact -view builder_" + 
-                this.projectName + "_int " + this.ccActivity);
-            Runtime.getRuntime().exec("/opt/rational/clearcase/bin/cleartool checkout -nc " + this.confFilePath);
-        
             InputStream fis = new FileInputStream(confFilePath);
             BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
             while ((line = br.readLine()) != null) 
@@ -222,15 +240,20 @@ public class MkverConf
             pw.close();
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            ProcessBuilder p = new ProcessBuilder("top", "sdf");
-            p.redirectError(new File("sdfsd"));
-            Runtime.getRuntime().exec("/opt/rational/clearcase/bin/cleartool checkin -nc -identical " + this.confFilePath);
+            p = new ProcessBuilder().inheritIO().command(clearcaseCheckinCMD).start();
+            System.out.println("after clearcaseCheckinCMD\nExit value: " + p.waitFor());
+            p = new ProcessBuilder().inheritIO().command(clearcaseUnsetActivityCMD).start();
+            System.out.println("after clearcaseUnsetActivityCMD\nExit value: " + p.waitFor());
         } catch (IOException ex) {
+            Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
             Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -317,6 +340,11 @@ public class MkverConf
         }
         
         return isNewDataFound;
+    }
+    
+    private String getProjectNameWithoutBashVariables()
+    {
+        return this.projectName.replaceAll("\\$\\{.*\\}", "");
     }
     
     public String getProjectName()
