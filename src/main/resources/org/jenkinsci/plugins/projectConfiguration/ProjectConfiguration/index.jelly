@@ -112,34 +112,12 @@
                         </f:optionalBlock>
                     </tr>
                     <tr>
-                        <f:optionalBlock name="checkboxSave" value="schdule" title="scheduler">
+                        <f:optionalBlock name="checkboxSave" value="addSchedule" title="Add schedule">
                             <tr>
                                 <f:entry title="Schdules:">
                                     <f:expandableTextbox name="schedules" value="${it.getSchdules()}"/>
                                 </f:entry>
                             </tr>
-<!--
-                            <tr>
-                                <form action="removeSchedule" method="post">
-                                    <tr>
-                                        <f:dropdownList name="existingSchedules" title="Existing Schedules:">
-                                          <f:dropdownListBlock title="" value=""/>
-                                          Loop through available schedules types
-                                          <j:forEach var="schedule" items="${it.getActiveSchedules()}" varStatus="loop">
-                                            <f:dropdownListBlock title="${schedule.toString()}" value="${loop.index}"
-                                                                 selected="${schedule!=null}" staplerClass="${schedule.clazz.name}">
-                                            </f:dropdownListBlock>
-                                          </j:forEach>
-                                        </f:dropdownList>
-                                    </tr>
-                                    <tr>
-                                        <f:entry title="" >
-                                            <input type="button" onClick="${it.doRemoveSchedule(schedule)}" value="remove"/>
-                                        </f:entry>
-                                    </tr>
-                                </form>
-                            </tr>
--->
                             <tr>
                                 <f:entry title="Name:">
                                     <f:textbox name="scheduleName" value="${it.getJobName()} Daily" 
@@ -260,7 +238,7 @@
             </form>
             <form action="removeSchedule" method="post">
                 <table>
-                    <f:optionalBlock name="checkboxRemove" value="schdule" title="scheduler">
+                    <f:optionalBlock name="checkboxRemove" value="removeSchedule" title="Remove schedule">
                         <tr>
                             <f:dropdownList name="existingSchedules" title="Existing Schedules:">
                               <f:dropdownListBlock title="" value=""/>
@@ -280,13 +258,6 @@
                     </f:optionalBlock>
                 </table>
             </form>
-<!--        <table>
-            <f:entry title="Enter name:">
-                <f:textbox field="nameTextBox"/>
-            </f:entry>
-            <f:validateButton title="Save" progress="Saving..." method="saveName" with="nameTextBox" value="${%Save}" />
-        </table>
-        <H1>${it.myString}</H1> -->
     </l:main-panel>
 </l:layout>
 </j:jelly>
