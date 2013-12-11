@@ -20,7 +20,6 @@ public class ProjectConfigurationActionFactory extends TransientProjectActionFac
 
     @Override
     public Collection<? extends Action> createFor(AbstractProject target) {
-        System.out.println("in MkverParametersActionFactory createFor()");
         ArrayList<Action> actions = new ArrayList<Action>();
         
         ProjectConfiguration newAction = new ProjectConfiguration(target);

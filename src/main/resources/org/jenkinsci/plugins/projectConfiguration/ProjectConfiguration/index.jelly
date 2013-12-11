@@ -14,7 +14,7 @@
 
                 <table>
                     <tr>
-                        <f:radioBlock name="whatToConfigure" value="confFile" title="configuration">
+                        <f:optionalBlock name="checkboxConfFile" value="confFile" title="configuration">
                             <tr>
                                 <f:entry title="">
                                     <div style="text-decoration: underline">General configuration:</div>
@@ -109,21 +109,22 @@
                                     <f:textbox name="kwDirPath" value="${it.getKWDirPath()}"/>
                                 </f:entry>
                             </tr>
-                        </f:radioBlock>
+                        </f:optionalBlock>
                     </tr>
                     <tr>
-                        <f:radioBlock name="whatToConfigure" value="schdule" title="scheduler">
+                        <f:optionalBlock name="checkboxSave" value="schdule" title="scheduler">
                             <tr>
                                 <f:entry title="Schdules:">
                                     <f:expandableTextbox name="schedules" value="${it.getSchdules()}"/>
                                 </f:entry>
                             </tr>
+<!--
                             <tr>
                                 <form action="removeSchedule" method="post">
                                     <tr>
                                         <f:dropdownList name="existingSchedules" title="Existing Schedules:">
                                           <f:dropdownListBlock title="" value=""/>
-                                          <!-- Loop through available schedules types -->
+                                          Loop through available schedules types
                                           <j:forEach var="schedule" items="${it.getActiveSchedules()}" varStatus="loop">
                                             <f:dropdownListBlock title="${schedule.toString()}" value="${loop.index}"
                                                                  selected="${schedule!=null}" staplerClass="${schedule.clazz.name}">
@@ -138,6 +139,7 @@
                                     </tr>
                                 </form>
                             </tr>
+-->
                             <tr>
                                 <f:entry title="Name:">
                                     <f:textbox name="scheduleName" value="${it.getJobName()} Daily" 
@@ -249,11 +251,33 @@
                                     </f:entry>
                                 </f:radioBlock>
                             </tr>
-                    		</f:radioBlock>
+                        </f:optionalBlock>
                     </tr>
                     <f:entry title="" >
                         <f:submit value="Save"/>
                     </f:entry>
+                </table>
+            </form>
+            <form action="removeSchedule" method="post">
+                <table>
+                    <f:optionalBlock name="checkboxRemove" value="schdule" title="scheduler">
+                        <tr>
+                            <f:dropdownList name="existingSchedules" title="Existing Schedules:">
+                              <f:dropdownListBlock title="" value=""/>
+                              <!-- Loop through available schedules types -->
+                              <j:forEach var="schedule" items="${it.getActiveSchedules()}" varStatus="loop">
+                                <f:dropdownListBlock title="${schedule.toString()}" value="${loop.index}"
+                                                     selected="${schedule!=null}" staplerClass="${schedule.clazz.name}">
+                                </f:dropdownListBlock>
+                              </j:forEach>
+                            </f:dropdownList>
+                        </tr>
+                        <tr>
+                            <f:entry title="" >
+                                <f:submit value="remove"/>
+                            </f:entry>
+                        </tr>
+                    </f:optionalBlock>
                 </table>
             </form>
 <!--        <table>

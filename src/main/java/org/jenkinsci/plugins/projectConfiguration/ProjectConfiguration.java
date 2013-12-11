@@ -8,35 +8,20 @@ import antlr.ANTLRException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionList;
-import hudson.ExtensionPoint;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.security.Permission;
-import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
-import hudson.triggers.TimerTrigger.TimerTriggerCause;
-import hudson.triggers.Trigger;
-import hudson.triggers.TriggerDescriptor;
 import hudson.util.ListBoxModel;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -151,7 +136,10 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     public void doSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
     {
         String whatToConfigure = req.getParameter("whatToConfigure");
-        if (whatToConfigure.equals("confFile") == true)
+        System.out.println(req.getParameter("checkboxConfFile"));
+        System.out.println(req.getParameter("checkboxSave"));
+        System.out.println(req.getParameter("removeSchdule"));
+        if (req.getParameter("checkboxConfFile") != null)
         {
             mkverConf.checkIfFileIsUptodateAndUpdate(req.getParameter("projectName"), 
                     req.getParameter("streamName"), req.getParameter("mailingList"),
@@ -161,7 +149,7 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
                     req.getParameter("kwDirPath"), req.getParameter("idcVersionFilePath"),
                     req.getParameter("productName"), req.getParameter("buildDirPath"));
         }
-        else if (whatToConfigure.equals("schdule") == true)
+        if (req.getParameter("checkboxSave") != null)
         {
             try 
             {
@@ -196,13 +184,16 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
                 Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        if (req.getParameter("checkboxRemove") != null)
+        {
+            System.out.println("in doSubmit");
+        }
         //Find a better way to redirect the response so it won't be hard coded.
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
     }
     
-    public void doRemoveSchedule(String schedule)
-    {
-        System.out.println(schedule);
+    public void doRemoveSchedule(StaplerRequest req, StaplerResponse rsp)    {
+        System.out.println("in doRemoveSchedule");
     }
     
     private boolean CheckBuildPermissions(){

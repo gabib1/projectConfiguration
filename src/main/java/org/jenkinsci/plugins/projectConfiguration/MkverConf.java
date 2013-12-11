@@ -5,6 +5,7 @@
 package org.jenkinsci.plugins.projectConfiguration;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -139,9 +140,16 @@ public class MkverConf
     {
         String line;
         List<String> newFileContent = new ArrayList<String>();
+        
+        
 
         try 
         {
+            
+            Runtime.getRuntime().exec("/opt/rational/clearcase/bin/cleartool setact -view builder_" + 
+                this.projectName + "_int " + this.ccActivity);
+            Runtime.getRuntime().exec("/opt/rational/clearcase/bin/cleartool checkout -nc " + this.confFilePath);
+        
             InputStream fis = new FileInputStream(confFilePath);
             BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
             while ((line = br.readLine()) != null) 
@@ -217,6 +225,13 @@ public class MkverConf
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            ProcessBuilder p = new ProcessBuilder("top", "sdf");
+            p.redirectError(new File("sdfsd"));
+            Runtime.getRuntime().exec("/opt/rational/clearcase/bin/cleartool checkin -nc -identical " + this.confFilePath);
+        } catch (IOException ex) {
+            Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
