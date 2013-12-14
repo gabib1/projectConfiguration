@@ -18,7 +18,6 @@ import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -27,7 +26,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- *
  * @author gabi
  * TODO add side-panel.jelly to the side
  * Consider: The classes(Scheduled, WeeklySch...) were created to try and make the work with
@@ -35,7 +33,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * oriented approach might have been unnecessary, check if maybe we should declare an
  * ArrayList<Schedule> and each time we add or remove from it we would overwrite the existing spec.
  */
-public class ProjectConfiguration implements Action, Describable<ProjectConfiguration>{
+public class ProjectConfiguration implements Action{//, Describable<ProjectConfiguration>{
     
     private final AbstractProject<?, ?> project;
     private MkverConf mkverConf;
@@ -56,61 +54,67 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
         return project.getName();
     }
     
-    @Override
-    public Descriptor<ProjectConfiguration> getDescriptor() 
-    {
-        return Jenkins.getInstance().getDescriptorOrDie(getClass());
-    }
+//    @Override
+//    public Descriptor<ProjectConfiguration> getDescriptor() 
+//    {
+//        return Jenkins.getInstance().getDescriptorOrDie(getClass());
+//    }
     
     public ArrayList<String> getActiveSchedules()
     {
+        System.out.println("In getActiveSchedules()");
         ArrayList<Scheduled> schedules;
         ArrayList<String> schedulesDescription = new ArrayList<String>();
         TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
-        try
+        if (timerTrigger != null)
         {
-            schedules = parseSpec(timerTrigger.getSpec());
-            Iterator<Scheduled> it = schedules.iterator();
-            while (it.hasNext())
+            try
             {
-                schedulesDescription.add(it.next().toString());
+                System.out.println(timerTrigger.getSpec());
+                schedules = parseSpec(timerTrigger.getSpec());
+                Iterator<Scheduled> it = schedules.iterator();
+                while (it.hasNext())
+                {
+                    String currentScheduleDescription = it.next().toString();
+                    schedulesDescription.add(currentScheduleDescription);
+                    System.out.println(currentScheduleDescription);
+                }
+            }catch(InvalidInputException ex){
+                    Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+                    System.out.println("Error while parsing spec file");
             }
-        }catch(InvalidInputException ex){
-                Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
-                System.out.println("Error while parsing spec file");
         }
-        
         
         return schedulesDescription;
     }
 
-    public DescriptorExtensionList<Scheduled,Descriptor<Scheduled>> getScheduleDescriptors() {
-        return Jenkins.getInstance().<Scheduled,Descriptor<Scheduled>>getDescriptorList(Scheduled.class);
-    }
+//    public DescriptorExtensionList<Scheduled,Descriptor<Scheduled>> getScheduleDescriptors() {
+//        return Jenkins.getInstance().<Scheduled,Descriptor<Scheduled>>getDescriptorList(Scheduled.class);
+//    }
    
-    public static ExtensionList<ProjectConfiguration> all()
-    {
-        return Jenkins.getInstance().getExtensionList(ProjectConfiguration.class);
-    }
+//    public static ExtensionList<ProjectConfiguration> all()
+//    {
+//        return Jenkins.getInstance().getExtensionList(ProjectConfiguration.class);
+//    }
     
-    @Extension
-    public static final class DescriptorImpl extends Descriptor<ProjectConfiguration> 
-    {
-    
-        public ListBoxModel doFillSchedulesItems() {
-            System.out.println("in doFillSchedulesItems");
-            ListBoxModel m = new ListBoxModel();
-            m.add("Yellow Submarine","1");
-            m.add("Abbey Road","2");
-            m.add("Let It Be","3");
-            return m;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return clazz.getSimpleName();
-        }
-    }
+//    @Extension
+//    public static final class DescriptorImpl extends Descriptor<ProjectConfiguration> 
+//    {
+//    
+//        public ListBoxModel doFillSchedulesItems() {
+//            System.out.println("in doFillSchedulesItems");
+//            ListBoxModel m = new ListBoxModel();
+//            m.add("Yellow Submarine","1");
+//            m.add("Abbey Road","2");
+//            m.add("Let It Be","3");
+//            return m;
+//        }
+//
+//        @Override
+//        public String getDisplayName() {
+//            return clazz.getSimpleName();
+//        }
+//    }
 
     @Override
     public String getIconFileName() {
@@ -143,33 +147,31 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     }
     
     // Set a new Corntab entry using TimerTrigger class
-    public void doSubmit(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
+    public void doSubmitConfFile(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
     {
-        System.out.println(req.getParameter("checkboxConfFile"));
-        System.out.println(req.getParameter("checkboxSave"));
-        System.out.println(req.getParameter("removeSchdule"));
-        if (req.getParameter("checkboxConfFile") != null)
+        mkverConf.checkIfFileIsUptodateAndUpdate(req.getParameter("projectName"), 
+                req.getParameter("streamName"), req.getParameter("mailingList"),
+                req.getParameter("mailingListTesting"), req.getParameter("logsPath"),
+                req.getParameter("rpmPath"), req.getParameter("imagePath"),
+                req.getParameter("ccActivity"), req.getParameter("kwProjectName"),
+                req.getParameter("kwDirPath"), req.getParameter("idcVersionFilePath"),
+                req.getParameter("productName"), req.getParameter("buildDirPath"));
+        
+        //Find a better way to redirect the response so it won't be hard coded.
+        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
+    }
+    
+    // Set a new Corntab entry using TimerTrigger class
+    public void doSubmitSchedule(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
+    {
+        try
         {
-            mkverConf.checkIfFileIsUptodateAndUpdate(req.getParameter("projectName"), 
-                    req.getParameter("streamName"), req.getParameter("mailingList"),
-                    req.getParameter("mailingListTesting"), req.getParameter("logsPath"),
-                    req.getParameter("rpmPath"), req.getParameter("imagePath"),
-                    req.getParameter("ccActivity"), req.getParameter("kwProjectName"),
-                    req.getParameter("kwDirPath"), req.getParameter("idcVersionFilePath"),
-                    req.getParameter("productName"), req.getParameter("buildDirPath"));
-        }
-        if (req.getParameter("checkboxSave") != null)
-        {
-            try
-            {
-                Scheduled schedule = generateScheduleClassFromRequest(req);
-                
-                addEntryToSpec(schedule.getSpec());
-                
-            } catch(InvalidInputException ex){
-                Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            Scheduled schedule = generateScheduleClassFromRequest(req);
 
+            addEntryToSpec(schedule.getSpec());
+
+        } catch(InvalidInputException ex){
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         //Find a better way to redirect the response so it won't be hard coded.
@@ -190,7 +192,6 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
         try 
         {
             removeEntryFromSpec(scheduleName);
-            
         } catch (InvalidInputException ex) {
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -201,17 +202,17 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     
     /**
      *
-     * @param newEntry - should be in the following format: 
+     * @param newEntry should be in the following format: 
      * #Name\n* * * * *
      * "*" might be replaced by the desired value
      */
-    public void addEntryToSpec(String newEntry)
+    private void addEntryToSpec(String newEntry)
     {
         String prevSpec, newSpec;
         
         TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
 
-        if (timerTrigger != null)
+        if (timerTrigger != null && timerTrigger.getSpec().equals("") == false)
         {
             prevSpec = timerTrigger.getSpec();
             newSpec = prevSpec + "\n" + newEntry;
@@ -227,7 +228,7 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
         updateSpec(timerTrigger, newSpec);
     }
     
-    public void removeEntryFromSpec(String name) throws InvalidInputException
+    private void removeEntryFromSpec(String name) throws InvalidInputException
     {
         String spec = "";
         String[] specArr;
@@ -235,7 +236,7 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
 
         if (timerTrigger != null)
         {
-            specArr = timerTrigger.getSpec().split("\\n");
+            specArr = timerTrigger.getSpec().split("\n");
             
             for (int i = 0; i < specArr.length; i+=2)
             {
@@ -257,7 +258,7 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
         updateSpec(timerTrigger, spec);
     }
     
-    public void updateSpec(TimerTrigger timerTrigger, String newSpec)
+    private void updateSpec(TimerTrigger timerTrigger, String newSpec)
     {
         try 
         {
@@ -357,6 +358,7 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
         String[] specArr = spec.split("\n");
         ArrayList<Scheduled> schedules = new ArrayList<Scheduled>();
         
+        System.out.println(specArr.length);
         for (int i = 0; i < specArr.length; i+=2)
         {
             if (specArr[i].startsWith("#"))

@@ -137,7 +137,8 @@ public class MkverConf
             br.close();
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("File not found");
+//            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }

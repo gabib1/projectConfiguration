@@ -13,7 +13,7 @@ import jenkins.model.Jenkins;
  *
  * @author gabi
  */
-public class Scheduled implements Describable<Scheduled>{
+public class Scheduled{// implements Describable<Scheduled>{
     
     String description;
     String minute;
@@ -92,21 +92,21 @@ public class Scheduled implements Describable<Scheduled>{
         }
     }
     
-    @Override
-    public Descriptor<Scheduled> getDescriptor() {
-        return Jenkins.getInstance().getDescriptor(getClass());
-    }
-    
-    @Extension public static final ScheduledDescriptor D = new ScheduledDescriptor(Scheduled.class);
-    
-    public static class ScheduledDescriptor extends Descriptor<Scheduled> {
-        
-        public ScheduledDescriptor(Class<? extends Scheduled> clazz) {
-            super(clazz);
-        }
-        
-        public String getDisplayName() {
-            return clazz.getSimpleName();
-        }
-    }
+//    @Override
+//    public Descriptor<Scheduled> getDescriptor() {
+//        return Jenkins.getInstance().getDescriptor(getClass());
+//    }
+//    
+//    @Extension public static final ScheduledDescriptor D = new ScheduledDescriptor(Scheduled.class);
+//    
+//    public static class ScheduledDescriptor extends Descriptor<Scheduled> {
+//        
+//        public ScheduledDescriptor(Class<? extends Scheduled> clazz) {
+//            super(clazz);
+//        }
+//        
+//        public String getDisplayName() {
+//            return clazz.getSimpleName();
+//        }
+//    }
 }
