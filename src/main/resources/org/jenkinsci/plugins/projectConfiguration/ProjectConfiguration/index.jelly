@@ -10,11 +10,10 @@
     </l:side-panel>
     <l:main-panel>
         <H1>${it.getJobName()} Configuration</H1>
-            <form action="submit" method="post">
-
+            <form action="submitConfFile" method="post">
                 <table>
-                    <tr>
-                        <f:optionalBlock name="checkboxConfFile" value="confFile" title="configuration">
+                    <f:optionalBlock name="checkboxConfFile" value="confFile" title="Configuration">
+                        <tr>
                             <tr>
                                 <f:entry title="">
                                     <div style="text-decoration: underline">General configuration:</div>
@@ -109,10 +108,19 @@
                                     <f:textbox name="kwDirPath" value="${it.getKWDirPath()}"/>
                                 </f:entry>
                             </tr>
-                        </f:optionalBlock>
-                    </tr>
-                    <tr>
-                        <f:optionalBlock name="checkboxSave" value="addSchedule" title="Add schedule">
+                        </tr>
+                        <tr>
+                            <f:entry title="" >
+                                <f:submit value="Save"/>
+                            </f:entry>
+                        </tr>
+                    </f:optionalBlock>
+                </table>
+            </form>
+            <form action="submitSchedule" method="post">
+                <table>
+                    <f:optionalBlock name="checkboxSave" value="addSchedule" title="Add schedule">
+                        <tr>
                             <tr>
                                 <f:entry title="Schdules:">
                                     <f:expandableTextbox name="schedules" value="${it.getSchdules()}"/>
@@ -229,11 +237,13 @@
                                     </f:entry>
                                 </f:radioBlock>
                             </tr>
-                        </f:optionalBlock>
-                    </tr>
-                    <f:entry title="" >
-                        <f:submit value="Save"/>
-                    </f:entry>
+                        </tr>
+                        <tr>
+                            <f:entry title="" >
+                                <f:submit value="Save"/>
+                            </f:entry>
+                        </tr>
+                    </f:optionalBlock>
                 </table>
             </form>
             <form action="removeSchedule" method="post">
