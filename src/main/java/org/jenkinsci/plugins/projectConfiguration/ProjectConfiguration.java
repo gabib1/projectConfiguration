@@ -18,6 +18,7 @@ import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -29,6 +30,10 @@ import org.kohsuke.stapler.StaplerResponse;
  *
  * @author gabi
  * TODO add side-panel.jelly to the side
+ * Consider: The classes(Scheduled, WeeklySch...) were created to try and make the work with
+ * the cron spec easier but it seems that working with the cron is pretty simple, so the object
+ * oriented approach might have been unnecessary, check if maybe we should declare an
+ * ArrayList<Schedule> and each time we add or remove from it we would overwrite the existing spec.
  */
 public class ProjectConfiguration implements Action, Describable<ProjectConfiguration>{
     
@@ -155,54 +160,117 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
         }
         if (req.getParameter("checkboxSave") != null)
         {
-            try 
+            try
             {
-                String prevSpec;
-                String newSpec;
                 Scheduled schedule = generateScheduleClassFromRequest(req);
-
-                //Read previous Cron and add current to it end
-
-                TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
-
-                if (timerTrigger != null)
-                {
-                    System.out.println(timerTrigger.getSpec());
-                    prevSpec = timerTrigger.getSpec();
-                    newSpec = prevSpec + "\n" + schedule.getSpec();
-                    timerTrigger.stop();
-                    project.removeTrigger(timerTrigger.getDescriptor());
-                }
-                else
-                {
-                    System.out.println("No TimerTrigger available, creating one");
-                    newSpec = schedule.getSpec();
-                }
-
-                System.out.println(newSpec);
-                timerTrigger = new TimerTrigger(newSpec);
-                timerTrigger.start(project, true);
-                project.addTrigger(timerTrigger);
-
-            } catch (InvalidInputException | ANTLRException ex) {
+                
+                addEntryToSpec(schedule.getSpec());
+                
+            } catch(InvalidInputException ex){
                 Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
             }
+
         }
-        if (req.getParameter("checkboxRemove") != null)
-        {
-            System.out.println("in doSubmit");
-        }
+        
         //Find a better way to redirect the response so it won't be hard coded.
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
     }
     
-    public void doRemoveSchedule(StaplerRequest req, StaplerResponse rsp)    
+    public void doRemoveSchedule(StaplerRequest req, StaplerResponse rsp) throws IOException    
     {
-        String scheduleToRemove;
-        try {
-            scheduleToRemove = req.bindJSON(String.class, req.getSubmittedForm().getJSONObject("existingSchedules"));
-            System.out.println(scheduleToRemove);
-        } catch (ServletException ex) {
+        // the schedules as they appear to the user are in toString() format which is more
+        // informative but not the same as it appears in the cron spec, we will extract the
+        // schedule description (which is the content that appears until the ":") and search for
+        // objects with the same description
+        String userChoice = req.getParameter("existingSchedules");
+        int indexOfColon = userChoice.indexOf(':');
+        String scheduleName = userChoice.substring(0, indexOfColon);
+        System.out.println("scheduleName: " + scheduleName);
+        
+        try 
+        {
+            removeEntryFromSpec(scheduleName);
+            
+        } catch (InvalidInputException ex) {
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        //Find a better way to redirect the response so it won't be hard coded.
+        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
+    }
+    
+    /**
+     *
+     * @param newEntry - should be in the following format: 
+     * #Name\n* * * * *
+     * "*" might be replaced by the desired value
+     */
+    public void addEntryToSpec(String newEntry)
+    {
+        String prevSpec, newSpec;
+        
+        TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
+
+        if (timerTrigger != null)
+        {
+            prevSpec = timerTrigger.getSpec();
+            newSpec = prevSpec + "\n" + newEntry;
+        }
+        else
+        {
+            System.out.println("No previous TimerTrigger");
+            newSpec = newEntry;
+        }
+
+        System.out.println(newSpec);
+        
+        updateSpec(timerTrigger, newSpec);
+    }
+    
+    public void removeEntryFromSpec(String name) throws InvalidInputException
+    {
+        String spec = "";
+        String[] specArr;
+        TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
+
+        if (timerTrigger != null)
+        {
+            specArr = timerTrigger.getSpec().split("\\n");
+            
+            for (int i = 0; i < specArr.length; i+=2)
+            {
+                // we extract the specArray back to spec except the description and the following
+                // cron entry which coresponds with the input name
+                if (specArr[i].startsWith("#" + name) == false)
+                {
+                    spec += specArr[i] + "\n" + specArr[i+1] + "\n";
+                }
+            }
+        }
+        else
+        {
+            throw new InvalidInputException("timerTrigger is empty can't remove " + name);
+        }
+
+        System.out.println(spec);
+        
+        updateSpec(timerTrigger, spec);
+    }
+    
+    public void updateSpec(TimerTrigger timerTrigger, String newSpec)
+    {
+        try 
+        {
+            if (timerTrigger != null)
+            {
+                timerTrigger.stop();
+                project.removeTrigger(timerTrigger.getDescriptor());
+            }
+
+            timerTrigger = new TimerTrigger(newSpec);
+            timerTrigger.start(project, true);
+            project.addTrigger(timerTrigger);
+        } catch (ANTLRException | IOException ex) {
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -286,7 +354,6 @@ public class ProjectConfiguration implements Action, Describable<ProjectConfigur
     
     private ArrayList<Scheduled> parseSpec(String spec) throws InvalidInputException
     {
-        System.out.println(spec);
         String[] specArr = spec.split("\n");
         ArrayList<Scheduled> schedules = new ArrayList<Scheduled>();
         
