@@ -240,15 +240,15 @@
                 <table>
                     <f:optionalBlock name="checkboxRemove" value="removeSchedule" title="Remove schedule">
                         <tr>
-                            <f:dropdownList name="existingSchedules" title="Existing Schedules:">
-                              <f:dropdownListBlock title="" value=""/>
-                              <!-- Loop through available schedules types -->
-                              <j:forEach var="schedule" items="${it.getActiveSchedules()}" varStatus="loop">
-                                <f:dropdownListBlock title="${schedule.toString()}" value="${loop.index}"
-                                                     selected="${schedule!=null}" staplerClass="${schedule.clazz.name}">
-                                </f:dropdownListBlock>
-                              </j:forEach>
-                            </f:dropdownList>
+                            <f:entry title="Existing schedules:">
+                                <select name="existingSchedules">
+                                    <j:forEach var="schedule" items="${it.getActiveSchedules()}" varStatus="loop">
+                                        <option value="${schedule.toString()}">
+                                            ${schedule.toString()}
+                                        </option>
+                                    </j:forEach>
+                                </select>
+                            </f:entry>
                         </tr>
                         <tr>
                             <f:entry title="" >
