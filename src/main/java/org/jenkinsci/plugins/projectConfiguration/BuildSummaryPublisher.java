@@ -7,6 +7,8 @@ package org.jenkinsci.plugins.projectConfiguration;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.BuildStepMonitor;
@@ -31,10 +33,15 @@ public class BuildSummaryPublisher extends Recorder {
     @Override
     public boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher,
                            final BuildListener listener) {
-        build.addAction(new BuildAction(build));
+        build.addAction(new BuildSummaryAction(build));
         return true;
     }
 
+    @Override
+    public Action getProjectAction(AbstractProject<?, ?> project)
+    {
+        return new BuildSummaryProjectAction((project));
+    }
     
     @Override
     public BuildStepMonitor getRequiredMonitorService() {

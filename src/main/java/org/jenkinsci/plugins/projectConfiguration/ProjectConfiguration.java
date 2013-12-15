@@ -62,7 +62,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     
     public ArrayList<String> getActiveSchedules()
     {
-        System.out.println("In getActiveSchedules()");
         ArrayList<Scheduled> schedules;
         ArrayList<String> schedulesDescription = new ArrayList<String>();
         TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
@@ -70,14 +69,12 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         {
             try
             {
-                System.out.println(timerTrigger.getSpec());
                 schedules = parseSpec(timerTrigger.getSpec());
                 Iterator<Scheduled> it = schedules.iterator();
                 while (it.hasNext())
                 {
                     String currentScheduleDescription = it.next().toString();
                     schedulesDescription.add(currentScheduleDescription);
-                    System.out.println(currentScheduleDescription);
                 }
             }catch(InvalidInputException ex){
                     Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
@@ -87,34 +84,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         
         return schedulesDescription;
     }
-
-//    public DescriptorExtensionList<Scheduled,Descriptor<Scheduled>> getScheduleDescriptors() {
-//        return Jenkins.getInstance().<Scheduled,Descriptor<Scheduled>>getDescriptorList(Scheduled.class);
-//    }
-   
-//    public static ExtensionList<ProjectConfiguration> all()
-//    {
-//        return Jenkins.getInstance().getExtensionList(ProjectConfiguration.class);
-//    }
-    
-//    @Extension
-//    public static final class DescriptorImpl extends Descriptor<ProjectConfiguration> 
-//    {
-//    
-//        public ListBoxModel doFillSchedulesItems() {
-//            System.out.println("in doFillSchedulesItems");
-//            ListBoxModel m = new ListBoxModel();
-//            m.add("Yellow Submarine","1");
-//            m.add("Abbey Road","2");
-//            m.add("Let It Be","3");
-//            return m;
-//        }
-//
-//        @Override
-//        public String getDisplayName() {
-//            return clazz.getSimpleName();
-//        }
-//    }
 
     @Override
     public String getIconFileName() {
@@ -187,7 +156,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         String userChoice = req.getParameter("existingSchedules");
         int indexOfColon = userChoice.indexOf(':');
         String scheduleName = userChoice.substring(0, indexOfColon);
-        System.out.println("scheduleName: " + scheduleName);
         
         try 
         {
@@ -223,8 +191,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
             newSpec = newEntry;
         }
 
-        System.out.println(newSpec);
-        
         updateSpec(timerTrigger, newSpec);
     }
     
@@ -252,8 +218,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         {
             throw new InvalidInputException("timerTrigger is empty can't remove " + name);
         }
-
-        System.out.println(spec);
         
         updateSpec(timerTrigger, spec);
     }
