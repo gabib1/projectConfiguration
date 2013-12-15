@@ -4,6 +4,7 @@
  */
 package org.jenkinsci.plugins.projectConfiguration;
 
+import hudson.model.Environment;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -147,8 +148,12 @@ public class MkverConf
     public void saveObjectToFile()
     {
         String line;
-        Process p;
         List<String> newFileContent = new ArrayList<String>();
+        
+        ProcessBuilder pb = new ProcessBuilder().inheritIO();
+        File log = new File("/var/log/jenkins/MkverConf.log");
+        pb.redirectErrorStream(true);
+        pb.redirectOutput(Redirect.appendTo(log));
         
         String[] clearcaseSetActivityCMD = {this.cleartool, "setact", "-view", 
             "builder_" + getProjectNameWithoutBashVariables() + "_int", "CQUSR00098872"};
@@ -156,18 +161,10 @@ public class MkverConf
         String[] clearcaseCheckinCMD = {this.cleartool, "checkin", "-nc", "-identical", this.confFilePath};
         String[] clearcaseUnsetActivityCMD = {this.cleartool, "setact", "-none"};
         
-
         try 
         {
-            System.out.println("before clearcaseSetActivityCMD");
-            ProcessBuilder pb = new ProcessBuilder().inheritIO().command(clearcaseSetActivityCMD);
-            File log = new File("/home/builder/log.txt");
-            pb.redirectErrorStream(true);
-            pb.redirectOutput(Redirect.appendTo(log));
-            p = pb.start();
-            System.out.println("after clearcaseSetActivityCMD\nExit value: " + p.waitFor());
-            p = new ProcessBuilder().inheritIO().command(clearcaseCheckoutCMD).start();
-            System.out.println("after clearcaseCheckoutCMD\nExit value: " + p.waitFor());
+            pb.command(clearcaseSetActivityCMD).start().waitFor();
+            pb.command(clearcaseCheckoutCMD).start().waitFor();
             
             InputStream fis = new FileInputStream(confFilePath);
             BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
@@ -242,19 +239,18 @@ public class MkverConf
             
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
+        } catch (IOException | InterruptedException ex) {
             Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        int indexOfLastSlash = this.confFilePath.lastIndexOf('/');
+        String confFileDir = this.confFilePath.substring(0, indexOfLastSlash);
+        
         try {
-            p = new ProcessBuilder().inheritIO().command(clearcaseCheckinCMD).start();
-            System.out.println("after clearcaseCheckinCMD\nExit value: " + p.waitFor());
-            p = new ProcessBuilder().inheritIO().command(clearcaseUnsetActivityCMD).start();
-            System.out.println("after clearcaseUnsetActivityCMD\nExit value: " + p.waitFor());
-        } catch (IOException ex) {
-            Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InterruptedException ex) {
+            pb.command(clearcaseCheckinCMD).start().waitFor();
+            pb.directory(new File(confFileDir)); // needed to unset the activity
+            pb.command(clearcaseUnsetActivityCMD).start().waitFor();
+        } catch (IOException | InterruptedException ex) {
             Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
