@@ -1,4 +1,13 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+    <j:set var="buildNumber" value="${from.getBuildNumber()}"/>
+    <j:if test="${buildNumber == '-1'}">
+        <H2>No previous builds</H2>
+    </j:if>
+    <j:if test="${buildNumber != '-1'}">
+        <H2>Build #${buildNumber} summary:</H2>
+    </j:if>
+
     <div id="container" style="width:500px;">
         <div class="row" style="hight:100px;width:500px;float:left;">
             <div class="colLeft" style="width:150px;float:left;">
