@@ -91,22 +91,4 @@ public class Scheduled{// implements Describable<Scheduled>{
             meridiem.append("PM");
         }
     }
-    
-//    @Override
-//    public Descriptor<Scheduled> getDescriptor() {
-//        return Jenkins.getInstance().getDescriptor(getClass());
-//    }
-//    
-//    @Extension public static final ScheduledDescriptor D = new ScheduledDescriptor(Scheduled.class);
-//    
-//    public static class ScheduledDescriptor extends Descriptor<Scheduled> {
-//        
-//        public ScheduledDescriptor(Class<? extends Scheduled> clazz) {
-//            super(clazz);
-//        }
-//        
-//        public String getDisplayName() {
-//            return clazz.getSimpleName();
-//        }
-//    }
 }

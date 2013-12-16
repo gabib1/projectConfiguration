@@ -54,12 +54,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         return project.getName();
     }
     
-//    @Override
-//    public Descriptor<ProjectConfiguration> getDescriptor() 
-//    {
-//        return Jenkins.getInstance().getDescriptorOrDie(getClass());
-//    }
-    
     public ArrayList<String> getActiveSchedules()
     {
         ArrayList<Scheduled> schedules;
@@ -264,12 +258,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         ArrayList<String> daysOfWeek = new ArrayList<>();
         String dateOfMonth;
         
-        System.out.println("after getParams:");
-        System.out.println("hour: " + hour);
-        System.out.println("minute: " + minute);
-        System.out.println("meridiem: " + meridiem);
-        System.out.println("type: " + type);
-        
         Scheduled schedule;
         
         switch (type) {
@@ -295,7 +283,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
                 break;
             case "Monthly":
                 dateOfMonth = req.getParameter("DateOfMonth");
-                System.out.println("dateOfMonth: " + dateOfMonth);
                 schedule = new MonthlyScheduled(minute, hour, meridiem, dateOfMonth, name);
                 break;
             default: 
@@ -322,7 +309,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         String[] specArr = spec.split("\n");
         ArrayList<Scheduled> schedules = new ArrayList<Scheduled>();
         
-        System.out.println(specArr.length);
         for (int i = 0; i < specArr.length; i+=2)
         {
             if (specArr[i].startsWith("#"))
@@ -335,13 +321,7 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
                 StringBuilder hour = new StringBuilder();
                 StringBuilder  meridiem = new StringBuilder();                  //minute init
                 Scheduled.getHourAndMerdidiem(cronEntry[1], hour, meridiem);    //hour & meridiem init
-                
-                
-                System.out.println("minute: " + minute);
-                System.out.println("hour: " + hour.toString());
-                System.out.println("meridiem: " + meridiem.toString());
-                System.out.println("description: " + description);
-                
+             
                 if(cronEntry[4].equals("*") == false)
                 {
                     String[] daysArr = cronEntry[4].split(",");                 //days init                    
@@ -351,8 +331,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
                 else if(cronEntry[2].equals("*") == false)
                 {
                     String dayOfMonth = cronEntry[2];
-                    
-                    System.out.println("day: " + dayOfMonth);
                     
                     schedules.add(new MonthlyScheduled(minute, hour.toString(), meridiem.toString(), dayOfMonth, description));
                 }

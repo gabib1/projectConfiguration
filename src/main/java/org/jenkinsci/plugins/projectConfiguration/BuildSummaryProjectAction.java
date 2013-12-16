@@ -7,6 +7,8 @@ package org.jenkinsci.plugins.projectConfiguration;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.BallColor;
+import jenkins.model.Jenkins;
 
 /**
  *
@@ -14,6 +16,9 @@ import hudson.model.Action;
  */
 public class BuildSummaryProjectAction implements Action {
     
+    private static final String statusPicsDir = Jenkins.getInstance().getRootUrl() +
+            "/static/80397a94/images/32x32/";
+        
     private AbstractProject<?, ?> project;
     
     BuildSummaryAction buildAction;
@@ -26,31 +31,62 @@ public class BuildSummaryProjectAction implements Action {
     public String getMkverBuildStatus()
     {
         AbstractBuild<?, ?> lastBuild = project.getLastBuild();
-        if (lastBuild != null && lastBuild.isBuilding() != true)
+        if (lastBuild == null || lastBuild.isBuilding())
         {
-            this.buildAction = lastBuild.getAction(BuildSummaryAction.class);
+            return statusPicsDir + BallColor.GREY.getImage();
         }
+        else if (lastBuild.isBuilding() == true)
+        {
+            return statusPicsDir + BallColor.GREY_ANIME.getImage();
+        }
+        this.buildAction = lastBuild.getAction(BuildSummaryAction.class);
         return this.buildAction.getMkverBuildStatus();
     }
     
     public String getKlocworkStatus()
     {
+        if (this.buildAction == null)
+        {
+            return statusPicsDir + BallColor.GREY.getImage();
+        }
         return this.buildAction.klocworkStatus;
     }
     
     public String getDeploymentStatus()
     {
+        if (this.buildAction == null)
+        {
+            return statusPicsDir + BallColor.GREY.getImage();
+        }
         return this.buildAction.deploymentStatus;
     }
     
     public String getTestsStatus()
     {
+        if (this.buildAction == null)
+        {
+            return statusPicsDir + BallColor.GREY.getImage();
+        }
         return this.buildAction.testsStatus;
     }
     
     public String getReportStatus()
     {
+        if (this.buildAction == null)
+        {
+            return statusPicsDir + BallColor.GREY.getImage();
+        }
         return this.buildAction.reportStatus;
+    }
+    
+    public int getBuildNumber()
+    {
+        AbstractBuild<?, ?> lastbuild = project.getLastBuild();
+        if (lastbuild != null)
+        {
+            return lastbuild.getNumber();
+        }
+        return -1;
     }
 
     @Override

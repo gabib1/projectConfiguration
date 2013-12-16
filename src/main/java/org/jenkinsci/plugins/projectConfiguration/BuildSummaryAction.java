@@ -9,12 +9,16 @@ import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Recorder;
+import jenkins.model.Jenkins;
 
 /**
  *
  * @author gabi
  */
 public class BuildSummaryAction implements Action {
+    
+    private static final String statusPicsDir = Jenkins.getInstance().getRootUrl() +
+            "/static/80397a94/images/32x32/";
     
     String mkverBuildStatus;
     String klocworkStatus;
@@ -48,11 +52,11 @@ public class BuildSummaryAction implements Action {
     }
     
     BuildSummaryAction(AbstractBuild<?, ?> build) {
-        this.mkverBuildStatus = "/jenkins/static/80397a94/images/32x32/" + build.getResult().color.getImage();
-        this.klocworkStatus = "/jenkins/static/80397a94/images/32x32/" + BallColor.YELLOW.getImage();
-        this.deploymentStatus = "/jenkins/static/80397a94/images/32x32/" + BallColor.GREY.getImage();
-        this.testsStatus = "/jenkins/static/80397a94/images/32x32/" + BallColor.GREY.getImage();
-        this.reportStatus = "/jenkins/static/80397a94/images/32x32/" + build.getResult().color.getImage();
+        this.mkverBuildStatus = statusPicsDir + build.getResult().color.getImage();
+        this.klocworkStatus = statusPicsDir + BallColor.YELLOW.getImage();
+        this.deploymentStatus = statusPicsDir + BallColor.GREY.getImage();
+        this.testsStatus = statusPicsDir + BallColor.GREY.getImage();
+        this.reportStatus = statusPicsDir + build.getResult().color.getImage();
     }
 
     @Override
