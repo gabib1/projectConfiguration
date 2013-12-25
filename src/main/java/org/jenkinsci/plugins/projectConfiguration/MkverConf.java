@@ -27,9 +27,12 @@ import java.util.logging.Logger;
  */
 public class MkverConf 
 {
+    // Information used by Jenkins and exists in the conf file
     private String confFilePath;
     private String cleartool;
+    private String jenkinsCCActivity;
     
+    // Information used by mkver and edited via Jenkins
     private String projectName;
     private String streamName;
     private String mailingList;
@@ -80,6 +83,11 @@ public class MkverConf
                 {
                     int indexOfEquels = line.indexOf('=') + 1;
                     this.ccActivity = line.substring(indexOfEquels);
+                }
+                else if (line.startsWith("JENKINS_CLEARQUEST_ACTIVITY=") == true)
+                {
+                    int indexOfEquels = line.indexOf('=') + 1;
+                    this.jenkinsCCActivity = line.substring(indexOfEquels);
                 }
                 else if (line.startsWith("RESULTS_PATH=") == true)
                 {
@@ -156,7 +164,7 @@ public class MkverConf
         pb.redirectOutput(Redirect.appendTo(log));
         
         String[] clearcaseSetActivityCMD = {this.cleartool, "setact", "-view", 
-            "builder_" + getProjectNameWithoutBashVariables() + "_int", "CQUSR00098872"};
+            "builder_" + getProjectNameWithoutBashVariables() + "_int", this.jenkinsCCActivity};
         String[] clearcaseCheckoutCMD = {this.cleartool, "checkout", "-nc", this.confFilePath};
         String[] clearcaseCheckinCMD = {this.cleartool, "checkin", "-nc", "-identical", this.confFilePath};
         String[] clearcaseUnsetActivityCMD = {this.cleartool, "setact", "-none"};
@@ -361,7 +369,7 @@ public class MkverConf
     
     public String getMailingListTesting()
     {
-        return this.mailingList;
+        return this.mailingListTesting;
     }
     
     public String getCCActivity()
