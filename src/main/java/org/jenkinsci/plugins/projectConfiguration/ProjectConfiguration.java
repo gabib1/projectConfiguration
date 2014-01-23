@@ -4,6 +4,7 @@
  */
 package org.jenkinsci.plugins.projectConfiguration;
 
+import org.jenkinsci.plugins.projectConfiguration.exceptions.InvalidInputException;
 import antlr.ANTLRException;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;

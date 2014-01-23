@@ -4,6 +4,7 @@
  */
 package org.jenkinsci.plugins.projectConfiguration;
 
+import org.jenkinsci.plugins.projectConfiguration.exceptions.InvalidInputException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
