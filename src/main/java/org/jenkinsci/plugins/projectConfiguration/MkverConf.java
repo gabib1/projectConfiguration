@@ -349,6 +349,7 @@ public class MkverConf
     
     private String getProjectNameWithoutBashVariables()
     {
+        // Not good fails on horizon case consider using the Jenkins project name
         return this.projectName.replaceAll("\\$\\{.*\\}", "");
     }
     

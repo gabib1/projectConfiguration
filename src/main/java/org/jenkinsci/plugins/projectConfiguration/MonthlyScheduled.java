@@ -4,6 +4,8 @@
  */
 package org.jenkinsci.plugins.projectConfiguration;
 
+import org.jenkinsci.plugins.projectConfiguration.exceptions.InvalidInputException;
+
 /**
  *
  * @author gabi
