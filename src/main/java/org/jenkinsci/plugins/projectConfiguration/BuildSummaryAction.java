@@ -19,9 +19,8 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.jenkinsci.plugins.projectConfiguration.buildSteps.KlocworkInfo;
-import org.jenkinsci.plugins.projectConfiguration.buildSteps.MkverBuildInfo;
-import org.jenkinsci.plugins.projectConfiguration.buildSteps.ReportInfo;
+import org.jenkinsci.plugins.projectConfiguration.buildSteps.BuildStepInfo;
+import org.jenkinsci.plugins.projectConfiguration.buildSteps.StepNameEnum;
 import org.jenkinsci.plugins.projectConfiguration.exceptions.ScriptPluginInteractionException;
 
 /**
@@ -37,156 +36,81 @@ public class BuildSummaryAction implements Action {
     BuildSummaryAction(AbstractBuild<?, ?> build) {
         this.build = build;
     }
-
     
     public String getMkverBuildStatus()
     {
-        try
-        {
-            MkverBuildInfo buildInfo = new MkverBuildInfo(this.build);
-            return buildInfo.getStatus();
-        }
-        catch (ScriptPluginInteractionException ex) 
-        {
-            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return getBuildStepInfo(this.build, StepNameEnum.BUILD).getStatus();
     }
     
     public String getKlocworkStatus()
     {
-        try
-        {
-            KlocworkInfo klocworkInfo = new KlocworkInfo(this.build);
-            return klocworkInfo.getStatus();
-        }
-        catch (ScriptPluginInteractionException ex) 
-        {
-            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return getBuildStepInfo(this.build, StepNameEnum.KW).getStatus();
     }
     
     public String getDeploymentStatus()
     {
-        return "N/A";
+        return getBuildStepInfo(this.build, StepNameEnum.DEPLOYMENT).getStatus();
     }
     
     public String getTestsStatus()
     {
-        return "N/A";
+        return getBuildStepInfo(this.build, StepNameEnum.TESTS).getStatus();
     }
     
     public String getReportStatus()
     {
-        try
+        if (this.build.isBuilding() == true)
         {
-            MkverBuildInfo buildInfo = new MkverBuildInfo(this.build);
-            return buildInfo.getStatus();
+            return "N/A";
         }
-        catch (ScriptPluginInteractionException ex) 
+        else
         {
-            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            return "SUCCESS";
         }
     }
     
     public String getMkverBuildStatusImg()
     {
-        try
-        {
-            MkverBuildInfo buildInfo = new MkverBuildInfo(this.build);
-            return buildInfo.getImg();
-        }
-        catch (ScriptPluginInteractionException ex) 
-        {
-            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return getBuildStepInfo(this.build, StepNameEnum.BUILD).getImg();
     }
     
     public String getKlocworkStatusImg()
     {
-        try
-        {
-            KlocworkInfo klocworkInfo = new KlocworkInfo(this.build); 
-            return klocworkInfo.getImg();
-        }
-        catch (ScriptPluginInteractionException ex) 
-        {
-            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return getBuildStepInfo(this.build, StepNameEnum.KW).getImg();
     }
     
     public String getDeploymentStatusImg()
     {
-        return statusPicsDir + BallColor.GREY.getImage();
+        return getBuildStepInfo(this.build, StepNameEnum.DEPLOYMENT).getImg();
     }
     
     public String getTestsStatusImg()
     {
-        return statusPicsDir + BallColor.GREY.getImage();
+        return getBuildStepInfo(this.build, StepNameEnum.TESTS).getImg();
     }
     
     public String getReportStatusImg()
     {
-        try
+        if (this.build.isBuilding() == true)
         {
-            ReportInfo reportInfo = new ReportInfo(this.build);
-            return reportInfo.getImg();
+            return BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
         }
-        catch (ScriptPluginInteractionException ex) 
+        else
         {
-            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
+            return BuildSummaryAction.statusPicsDir + BallColor.BLUE.getImage();
         }
     }
     
     public String getBuildDetails()
     {
-        try
-        {
-            MkverBuildInfo buildInfo = new MkverBuildInfo(this.build);
-            return buildInfo.getDetails();
-        }
-        catch (ScriptPluginInteractionException ex) 
-        {
-            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return getBuildStepInfo(this.build, StepNameEnum.BUILD).getDetails();
     }
     
     public String getKlocworkDetails()
     {
-        try
-        {
-            KlocworkInfo klocworkInfo = new KlocworkInfo(this.build);
-            return klocworkInfo.getDetails();
-        }
-        catch (ScriptPluginInteractionException ex) 
-        {
-            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
-    }
-    
-    public String getReportDetails()
-    {
-        try
-        {
-            ReportInfo reportInfo = new ReportInfo(this.build);
-            return reportInfo.getDetails();
-        }
-        catch (ScriptPluginInteractionException ex) 
-        {
-            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return getBuildStepInfo(this.build, StepNameEnum.KW).getDetails();
     }
 
-    
-    
     @Override
     public String getIconFileName() {
         return null;
@@ -200,5 +124,18 @@ public class BuildSummaryAction implements Action {
     @Override
     public String getUrlName() {
         return null;
+    }
+
+    private BuildStepInfo getBuildStepInfo(AbstractBuild<?, ?> build, StepNameEnum stepNameEnum) 
+    {
+        try
+        {
+            return new BuildStepInfo(build, stepNameEnum);
+        }
+        catch (ScriptPluginInteractionException ex) 
+        {
+            Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
 }
