@@ -66,8 +66,5 @@
                 <img src="${from.getReportStatusImg()}" onclick="appendExtraInfo('report-info')" title="${from.getReportStatus()}" style="cursor:pointer"/>
             </div>
         </div>
-        <div class="row" id="report-info" style="hight:100px;width:500px;float:left;display:none;">
-            ${from.getReportDetails()}
-        </div>
     </div>
 </j:jelly>
