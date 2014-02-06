@@ -23,7 +23,7 @@ import org.jenkinsci.plugins.projectConfiguration.exceptions.ScriptPluginInterac
  *
  * @author gabi
  */
-public final class BuildStepInfo {
+public class BuildStepInfo {
     
     protected String status;
     protected String img;
@@ -31,7 +31,7 @@ public final class BuildStepInfo {
     
     public BuildStepInfo(AbstractBuild<?, ?> build, StepNameEnum stepName) throws ScriptPluginInteractionException
     {
-        this.initInfo(build, stepName);
+        initInfo(build, stepName);
     }
     
     public String getStatus()
@@ -53,14 +53,15 @@ public final class BuildStepInfo {
     {
         try 
         {
-            File buildWorkspacePath = new File(build.getWorkspace().toURI().getPath() + "/build_" + build.getNumber() + "/");
+            File buildWorkspacePath = new File(build.getWorkspace().toURI().getPath() + "/build_" + build.getNumber());
             if (buildWorkspacePath.isDirectory() == false)
             {
-                throw new IOException("Build workspace path not found under: " + buildWorkspacePath.getPath());
+                System.out.println("Build workspace path not found under: " + buildWorkspacePath.getPath());
+                Thread.sleep(1000); // This sleep is needed because the script doesn't have enough time to create the "start" file
             }
             
-            File f_start = new File(buildWorkspacePath + stepName.name().toLowerCase() + "_start_" + build.getNumber() + ".info");
-            File f_finish = new File(buildWorkspacePath + stepName.name().toLowerCase() + "_finish_" + build.getNumber() + ".info");
+            File f_start = new File(buildWorkspacePath + "/" + stepName.name().toLowerCase() + "_start_" + build.getNumber() + ".info");
+            File f_finish = new File(buildWorkspacePath + "/" + stepName.name().toLowerCase() + "_finish_" + build.getNumber() + ".info");
             
             if (f_start.exists() == true)
             {
@@ -114,13 +115,13 @@ public final class BuildStepInfo {
             }
             else
             {
-                
+                System.out.println("No build files found, " + f_start + ", " + f_finish + "\nMarking build status as N/A");
                 this.status = "N/A";
                 this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
                 this.details = null;
             }
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(BuildStepInfo.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } 
     }
 }

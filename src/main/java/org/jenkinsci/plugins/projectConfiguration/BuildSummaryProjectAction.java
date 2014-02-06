@@ -8,8 +8,18 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BallColor;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -32,16 +42,6 @@ public class BuildSummaryProjectAction implements Action {
         this.project = project;
     }
     
-    public String getBuildDetails()
-    {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.BUILD).getDetails();
-    }
-    
-    public String getKlocworkDetails()
-    {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.KW).getDetails();
-    }
-    
     public String getMkverBuildStatus()
     {
         return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.BUILD).getStatus();
@@ -49,7 +49,7 @@ public class BuildSummaryProjectAction implements Action {
     
     public String getKlocworkStatus()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.BUILD).getStatus();
+        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.KW).getStatus();
     }
     
     public String getDeploymentStatus()
@@ -74,7 +74,7 @@ public class BuildSummaryProjectAction implements Action {
         }
     }
     
-    public String getMkverBuildStatusImg()
+    public String getMkverBuildStatusImg() throws ScriptPluginInteractionException
     {
         return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.BUILD).getImg();
     }
@@ -104,6 +104,18 @@ public class BuildSummaryProjectAction implements Action {
         {
             return BuildSummaryAction.statusPicsDir + BallColor.BLUE.getImage();
         }
+    }
+    
+    public String getBuildDetails()
+    {
+        BuildStepInfo BuildSpecInfoObject = getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.BUILD);
+        
+        return BuildSpecInfoObject.getDetails();
+    }
+    
+    public String getKlocworkDetails()
+    {
+        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.KW).getDetails();
     }
     
     public int getBuildNumber()
