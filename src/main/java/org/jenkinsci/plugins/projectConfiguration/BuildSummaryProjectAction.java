@@ -37,6 +37,12 @@ public class BuildSummaryProjectAction implements Action {
     
     BuildSummaryAction buildAction;
     
+    BuildStepInfo mkverBuild = null;
+    BuildStepInfo kw = null;
+    BuildStepInfo deployment = null;
+    BuildStepInfo tests = null;
+    BuildStepInfo reports = null;
+    
     public BuildSummaryProjectAction(AbstractProject<?, ?> project)
     {
         this.project = project;
@@ -44,22 +50,26 @@ public class BuildSummaryProjectAction implements Action {
     
     public String getMkverBuildStatus()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.BUILD).getStatus();
+        this.mkverBuild =  buildStepInfoFactory(this.project.getLastBuild(), null, StepNameEnum.BUILD);
+        return mkverBuild.getStatus();
     }
     
     public String getKlocworkStatus()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.KW).getStatus();
+        this.kw = buildStepInfoFactory(this.project.getLastBuild(), null, StepNameEnum.KW);
+        return kw.getStatus();
     }
     
     public String getDeploymentStatus()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.DEPLOYMENT).getDetails();
+        this.deployment = buildStepInfoFactory(this.project.getLastBuild(), null, StepNameEnum.DEPLOYMENT);
+        return deployment.getStatus();
     }
     
     public String getTestsStatus()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.TESTS).getDetails();
+        this.tests = buildStepInfoFactory(this.project.getLastBuild(), tests, StepNameEnum.TESTS);
+        return tests.getStatus();
     }
     
     public String getReportStatus()
@@ -68,35 +78,44 @@ public class BuildSummaryProjectAction implements Action {
         {
             return "N/A";
         }
+        else if(this.project.getLastBuild().getResult().completeBuild == false)
+        {
+            return "ABORTED";
+        }
         else
         {
             return "SUCCESS";
         }
     }
     
-    public String getMkverBuildStatusImg() throws ScriptPluginInteractionException
+    
+    public String getMkverBuildStatusImg()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.BUILD).getImg();
+        return buildStepInfoFactory(this.project.getLastBuild(), mkverBuild, StepNameEnum.BUILD).getImg();
     }
     
     public String getKlocworkStatusImg()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.KW).getImg();
+        return buildStepInfoFactory(this.project.getLastBuild(), kw, StepNameEnum.KW).getImg();
     }
     
     public String getDeploymentStatusImg()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.DEPLOYMENT).getImg();
+        return buildStepInfoFactory(this.project.getLastBuild(), deployment, StepNameEnum.DEPLOYMENT).getImg();
     }
     
     public String getTestsStatusImg()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.TESTS).getImg();
+        return buildStepInfoFactory(this.project.getLastBuild(), tests, StepNameEnum.TESTS).getImg();
     }
     
     public String getReportStatusImg()
     {
         if (this.project.getLastBuild().isBuilding() == true)
+        {
+            return BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
+        }
+        else if(this.project.getLastBuild().getResult().completeBuild == false)
         {
             return BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
         }
@@ -108,24 +127,12 @@ public class BuildSummaryProjectAction implements Action {
     
     public String getBuildDetails()
     {
-        BuildStepInfo BuildSpecInfoObject = getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.BUILD);
-        
-        return BuildSpecInfoObject.getDetails();
+        return buildStepInfoFactory(this.project.getLastBuild(), mkverBuild, StepNameEnum.BUILD).getDetails();
     }
     
     public String getKlocworkDetails()
     {
-        return getBuildStepInfo(this.project.getLastBuild(), StepNameEnum.KW).getDetails();
-    }
-    
-    public int getBuildNumber()
-    {
-        AbstractBuild<?, ?> lastbuild = project.getLastBuild();
-        if (lastbuild != null)
-        {
-            return lastbuild.getNumber();
-        }
-        return -1;
+        return buildStepInfoFactory(this.project.getLastBuild(), kw, StepNameEnum.KW).getDetails();
     }
 
     @Override
@@ -143,11 +150,15 @@ public class BuildSummaryProjectAction implements Action {
         return null;
     }
     
-    private BuildStepInfo getBuildStepInfo(AbstractBuild<?, ?> build, StepNameEnum stepNameEnum) 
+    private BuildStepInfo buildStepInfoFactory(AbstractBuild<?, ?> build,BuildStepInfo buildStepInfo, StepNameEnum stepNameEnum) 
     {
         try
         {
-            return new BuildStepInfo(build, stepNameEnum);
+            if (buildStepInfo == null)
+            {
+                return new BuildStepInfo(build, stepNameEnum);
+            }
+            return buildStepInfo;
         }
         catch (ScriptPluginInteractionException ex) 
         {

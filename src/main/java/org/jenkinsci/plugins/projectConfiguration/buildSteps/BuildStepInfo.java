@@ -57,7 +57,7 @@ public class BuildStepInfo {
             if (buildWorkspacePath.isDirectory() == false)
             {
                 System.out.println("Build workspace path not found under: " + buildWorkspacePath.getPath());
-                Thread.sleep(1000); // This sleep is needed because the script doesn't have enough time to create the "start" file
+                Thread.sleep(250); // This sleep is needed because the script doesn't have enough time to create the "start" file
             }
             
             File f_start = new File(buildWorkspacePath + "/" + stepName.name().toLowerCase() + "_start_" + build.getNumber() + ".info");
@@ -65,9 +65,25 @@ public class BuildStepInfo {
             
             if (f_start.exists() == true)
             {
-                this.status = "In progress";
-                this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY_ANIME.getImage();
-                this.details = null;
+                if (build.isBuilding() == true)
+                {
+                    this.status = "In progress";
+                    this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY_ANIME.getImage();
+                    this.details = null;
+                }
+                else if (build.getResult().completeBuild == false)
+                {
+                    this.status = "ABORTED";
+                    this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
+                    this.details = null;
+                }
+                else
+                {
+                    System.out.println("Start file found but build is not in progress and there is no result for the build\nMarking build status as N/A");
+                    this.status = "N/A";
+                    this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
+                    this.details = null;
+                }
             }
             else if (f_finish.exists() == true)
             {

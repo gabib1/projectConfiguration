@@ -7,20 +7,8 @@ package org.jenkinsci.plugins.projectConfiguration;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BallColor;
-import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.Recorder;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.projectConfiguration.buildSteps.BuildStepInfo;
 import org.jenkinsci.plugins.projectConfiguration.buildSteps.StepNameEnum;
 import org.jenkinsci.plugins.projectConfiguration.exceptions.ScriptPluginInteractionException;
@@ -35,28 +23,38 @@ public class BuildSummaryAction implements Action {
     
     AbstractBuild<?, ?> build;
     
+    BuildStepInfo mkverBuild = null;
+    BuildStepInfo kw = null;
+    BuildStepInfo deployment = null;
+    BuildStepInfo tests = null;
+    BuildStepInfo reports = null;
+    
     BuildSummaryAction(AbstractBuild<?, ?> build) {
         this.build = build;
     }
     
     public String getMkverBuildStatus()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.BUILD).getDetails();
+        this.mkverBuild =  buildStepInfoFactory(this.build, null, StepNameEnum.BUILD);
+        return mkverBuild.getStatus();
     }
     
     public String getKlocworkStatus()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.KW).getStatus();
+        this.kw = buildStepInfoFactory(this.build, null, StepNameEnum.KW);
+        return kw.getStatus();
     }
     
     public String getDeploymentStatus()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.DEPLOYMENT).getStatus();
+        this.deployment = buildStepInfoFactory(this.build, null, StepNameEnum.DEPLOYMENT);
+        return deployment.getStatus();
     }
     
     public String getTestsStatus()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.TESTS).getStatus();
+        this.tests = buildStepInfoFactory(this.build, tests, StepNameEnum.TESTS);
+        return tests.getStatus();
     }
     
     public String getReportStatus()
@@ -64,6 +62,10 @@ public class BuildSummaryAction implements Action {
         if (this.build.isBuilding() == true)
         {
             return "N/A";
+        }
+        else if(this.build.getResult().completeBuild == false)
+        {
+            return "ABORTED";
         }
         else
         {
@@ -73,27 +75,31 @@ public class BuildSummaryAction implements Action {
     
     public String getMkverBuildStatusImg()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.BUILD).getImg();
+        return buildStepInfoFactory(this.build, mkverBuild, StepNameEnum.BUILD).getImg();
     }
     
     public String getKlocworkStatusImg()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.KW).getImg();
+        return buildStepInfoFactory(this.build, kw, StepNameEnum.KW).getImg();
     }
     
     public String getDeploymentStatusImg()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.DEPLOYMENT).getImg();
+        return buildStepInfoFactory(this.build, deployment, StepNameEnum.DEPLOYMENT).getImg();
     }
     
     public String getTestsStatusImg()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.TESTS).getImg();
+        return buildStepInfoFactory(this.build, tests, StepNameEnum.TESTS).getImg();
     }
     
     public String getReportStatusImg()
     {
         if (this.build.isBuilding() == true)
+        {
+            return BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
+        }
+        else if(this.build.getResult().completeBuild == false)
         {
             return BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
         }
@@ -105,12 +111,12 @@ public class BuildSummaryAction implements Action {
     
     public String getBuildDetails()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.BUILD).getDetails();
+        return buildStepInfoFactory(this.build, mkverBuild, StepNameEnum.BUILD).getDetails();
     }
     
     public String getKlocworkDetails()
     {
-        return getBuildStepInfo(this.build, StepNameEnum.KW).getDetails();
+        return buildStepInfoFactory(this.build, kw, StepNameEnum.KW).getDetails();
     }
 
     @Override
@@ -128,11 +134,15 @@ public class BuildSummaryAction implements Action {
         return null;
     }
 
-    private BuildStepInfo getBuildStepInfo(AbstractBuild<?, ?> build, StepNameEnum stepNameEnum) 
+    private BuildStepInfo buildStepInfoFactory(AbstractBuild<?, ?> build,BuildStepInfo buildStepInfo, StepNameEnum stepNameEnum) 
     {
         try
         {
-            return new BuildStepInfo(build, stepNameEnum);
+            if (buildStepInfo == null)
+            {
+                return new BuildStepInfo(build, stepNameEnum);
+            }
+            return buildStepInfo;
         }
         catch (ScriptPluginInteractionException ex) 
         {
