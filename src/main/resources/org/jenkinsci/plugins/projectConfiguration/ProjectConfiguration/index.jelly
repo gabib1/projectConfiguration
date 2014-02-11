@@ -257,6 +257,49 @@
                 </f:optionalBlock>
             </table>
         </form>
+        <form action="failCriteria" method="post">
+            <table>
+                <tr>
+                    <f:entry title="">
+                        <f:optionalBlock name="checkboxFailCriteria" value="Fail build criteria" title="Fail build criteria">
+                            <tr>
+                                <f:entry title="">
+                                    <f:optionalBlock name="Klocwork" value="Klocwork" title="Klocwork">
+                                        <tr>
+                                            <f:entry title="">
+                                                <f:checkbox name="kw-critical" value="kw-critical" title="On criticals"/>
+                                            </f:entry>
+                                        </tr>
+                                        <tr>
+                                            <f:entry title="">
+                                                <f:checkbox name="kw-error" value="kw-error" title="On errors"/>
+                                            </f:entry>
+                                        </tr>
+                                        <tr>
+                                            <f:entry title="">
+                                                <f:checkbox name="kw-warning" value="kw-warning" title="On warnings"/>
+                                            </f:entry>
+                                        </tr>
+                                        <tr>
+                                            <f:entry title="">
+                                                <f:checkbox name="kw-any" value="kw-any" title="On any issue"/>
+                                            </f:entry>
+                                        </tr>
+                                    </f:optionalBlock>
+                                    <f:optionalBlock name="Tests" value="Tests" title="Tests">
+                                    </f:optionalBlock>
+                                </f:entry>
+                            </tr>
+                            <tr>
+                                <f:entry title="" >
+                                    <f:submit value="Save"/>
+                                </f:entry>
+                            </tr>
+                        </f:optionalBlock>
+                    </f:entry>
+                </tr>
+            </table>
+        </form>
     </l:main-panel>
 </l:layout>
 </j:jelly>
