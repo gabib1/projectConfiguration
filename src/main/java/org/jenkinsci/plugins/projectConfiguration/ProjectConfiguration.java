@@ -170,6 +170,57 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     
     /**
      *
+     * @param req
+     * @param rsp
+     * @throws IOException
+     */
+    public void doFailCriteria(StaplerRequest req, StaplerResponse rsp) throws IOException    
+    {
+        String kwCriteria = req.getParameter("Klocwork");
+        String testsCriteria = req.getParameter("Tests");
+        String kwCriticalOption = req.getParameter("kw-critical");
+        String kwErrorOption = req.getParameter("kw-error");
+        String kwWarningOption = req.getParameter("kw-warning");
+        String kwAnyOption = req.getParameter("kw-any");
+        
+        System.out.println("kwCriteria=" + kwCriteria);
+        System.out.println("kwCriticalOption=" + kwCriticalOption);
+        System.out.println("kwErrorOption=" + kwErrorOption);
+        System.out.println("kwWarningOption=" + kwWarningOption);
+        System.out.println("kwAnyOption=" + kwAnyOption);
+        
+        CriteriaProperty criteriaProperty = new CriteriaProperty();
+        
+        if (kwCriteria != null)
+        {
+            if (kwCriticalOption != null)
+            {
+                criteriaProperty.setSevirity(CriteriaProperty.SeverityEnum.CRITICAL);
+            }
+            else if (kwErrorOption != null)
+            {
+                criteriaProperty.setSevirity(CriteriaProperty.SeverityEnum.ERROR);
+            }
+            else if (kwWarningOption != null)
+            {
+                criteriaProperty.setSevirity(CriteriaProperty.SeverityEnum.WARNING);
+            }
+            else if (kwAnyOption != null)
+            {
+                criteriaProperty.setSevirity(CriteriaProperty.SeverityEnum.ANY);
+            }
+        }
+        if (testsCriteria != null)
+        {
+            System.out.println("Option not supported yet");
+        }
+        
+        //Find a better way to redirect the response so it won't be hard coded.
+        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
+    }
+    
+    /**
+     *
      * @param newEntry should be in the following format: 
      * #Name\n* * * * *
      * "*" might be replaced by the desired value

@@ -134,6 +134,16 @@ public class BuildSummaryProjectAction implements Action {
     {
         return buildStepInfoFactory(this.project.getLastBuild(), kw, StepNameEnum.KW).getDetails();
     }
+    
+    public int getBuildNumber()
+    {
+        AbstractBuild<?, ?> lastbuild = project.getLastBuild();
+        if (lastbuild != null)
+        {
+            return lastbuild.getNumber();
+        }
+        return -1;
+    }
 
     @Override
     public String getIconFileName() {
