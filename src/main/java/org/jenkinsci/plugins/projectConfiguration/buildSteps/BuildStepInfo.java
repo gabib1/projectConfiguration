@@ -122,8 +122,15 @@ public class BuildStepInfo {
                 {
                     this.img =  BuildSummaryAction.statusPicsDir + BallColor.RED.getImage();
                 }
+                else if(this.status.compareTo("FAILURE") == 0)
+                {
+                    this.img =  BuildSummaryAction.statusPicsDir + BallColor.RED.getImage();
+                }
                 else 
                 {
+                    this.status = "N/A";
+                    this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
+                    this.details = null;
                     throw new ScriptPluginInteractionException("Unknown status value: " + this.status);
                 }
                 

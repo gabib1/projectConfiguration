@@ -36,6 +36,8 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 public class ProjectConfiguration implements Action{//, Describable<ProjectConfiguration>{
     
+    private String confFileDir;
+    
     private final AbstractProject<?, ?> project;
     private MkverConf mkverConf;
     
@@ -47,7 +49,7 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     public ProjectConfiguration(AbstractProject<?, ?> project) 
     {
     	this.project = project;
-//        mkverConf = new MkverConf("/home/gabi/mkver.conf");
+        confFileDir = "/home/builder/BuildSystem/cc-views/builder_" + project.getName() + "_int/vobs/linux/CI_Conf";
         // the _int is hard coded although it may be anything, but because we currently don't
         // have our own project we can't store stuff in the freestyle one, this will should be changed
         // as soon as we create our own project type
@@ -195,19 +197,19 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         {
             if (kwCriticalOption != null)
             {
-                criteriaProperty.setSevirity(CriteriaProperty.SeverityEnum.CRITICAL);
+                criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.CRITICAL);
             }
             else if (kwErrorOption != null)
             {
-                criteriaProperty.setSevirity(CriteriaProperty.SeverityEnum.ERROR);
+                criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.ERROR);
             }
             else if (kwWarningOption != null)
             {
-                criteriaProperty.setSevirity(CriteriaProperty.SeverityEnum.WARNING);
+                criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.WARNING);
             }
             else if (kwAnyOption != null)
             {
-                criteriaProperty.setSevirity(CriteriaProperty.SeverityEnum.ANY);
+                criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.ANY);
             }
         }
         if (testsCriteria != null)

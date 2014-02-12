@@ -7,6 +7,7 @@ package org.jenkinsci.plugins.projectConfiguration;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BallColor;
+import hudson.model.Result;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.plugins.projectConfiguration.buildSteps.BuildStepInfo;
@@ -69,6 +70,7 @@ public class BuildSummaryAction implements Action {
         }
         else
         {
+            // TODO: Insert failed build logic based on fail cretiria
             return "SUCCESS";
         }
     }

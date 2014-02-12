@@ -6,39 +6,54 @@
 
 package org.jenkinsci.plugins.projectConfiguration;
 
+import java.io.File;
+
 /**
  *
  * @author gavrielk
  */
 public class CriteriaProperty
 {    
-    SeverityEnum severity;
+    private KWSeverityEnum kwSeverity;
+    private File f_failCriteria;
+    
     
     public CriteriaProperty()
     {
     }
     
-    public CriteriaProperty(SeverityEnum severity)
+//    public CriteriaProperty(KWSeverityEnum severity)
+//    {
+//        this.kwSeverity = severity; 
+//    }
+    
+    public CriteriaProperty(String failCritiriaFilePath)
     {
-        this.severity = severity; 
+        f_failCriteria = new File(failCritiriaFilePath);
+//        initFromFile(File)
     }
     
-    public void setSevirity(SeverityEnum severity)
+    public void setKWSevirity(KWSeverityEnum kwSeverity)
     {
-        this.severity = severity; 
+        this.kwSeverity = kwSeverity;
     }
     
-    public SeverityEnum getSeverity()
+    public KWSeverityEnum getKWSeverity()
     {
-        return this.severity;
+        return this.kwSeverity;
     }
     
-    public enum SeverityEnum 
+    public void saveToFile(File failCriteriaFail)
+    {
+        
+    }
+    
+    public enum KWSeverityEnum 
     {
         CRITICAL(1), ERROR(2), WARNING(3), ANY(4);
         
         private final int severityCode;
-        SeverityEnum(int severityCode) { this.severityCode = severityCode; }
+        KWSeverityEnum(int severityCode) { this.severityCode = severityCode; }
         public int getSeverityCode() { return this.severityCode; }
     }
 }
