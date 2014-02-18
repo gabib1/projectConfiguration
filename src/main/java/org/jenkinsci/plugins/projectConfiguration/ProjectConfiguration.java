@@ -40,6 +40,7 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     
     private final AbstractProject<?, ?> project;
     private MkverConf mkverConf;
+    private CriteriaProperty criteriaProperty;
     
     public ProjectConfiguration() 
     {
@@ -49,12 +50,13 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     public ProjectConfiguration(AbstractProject<?, ?> project) 
     {
     	this.project = project;
-        confFileDir = "/home/builder/BuildSystem/cc-views/builder_" + project.getName() + "_int/vobs/linux/CI_Conf";
+        String username = System.getProperty("user.name");
+        confFileDir = "/home/" + username + "/BuildSystem/cc-views/" + username + "_" + project.getName() + "_int/vobs/linux/CI_Conf";
         // the _int is hard coded although it may be anything, but because we currently don't
         // have our own project we can't store stuff in the freestyle one, this will should be changed
         // as soon as we create our own project type
-        mkverConf = new MkverConf("/home/builder/BuildSystem/cc-views/builder_" + project.getName() + 
-                "_int/vobs/linux/CI_Conf/mkver.conf");
+        mkverConf = new MkverConf(confFileDir + "/mkver.conf");
+        criteriaProperty = new CriteriaProperty(confFileDir + "/criteria.conf");
     }
     
     public String getJobName()
@@ -182,39 +184,54 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         String testsCriteria = req.getParameter("Tests");
         String kwCriticalOption = req.getParameter("kw-critical");
         String kwErrorOption = req.getParameter("kw-error");
-        String kwWarningOption = req.getParameter("kw-warning");
         String kwAnyOption = req.getParameter("kw-any");
         
         System.out.println("kwCriteria=" + kwCriteria);
         System.out.println("kwCriticalOption=" + kwCriticalOption);
         System.out.println("kwErrorOption=" + kwErrorOption);
-        System.out.println("kwWarningOption=" + kwWarningOption);
         System.out.println("kwAnyOption=" + kwAnyOption);
         
-        CriteriaProperty criteriaProperty = new CriteriaProperty();
-        
-        if (kwCriteria != null)
+        try
         {
-            if (kwCriticalOption != null)
+            if (kwCriteria != null)
             {
-                criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.CRITICAL);
+                if (kwAnyOption != null)
+                {
+                    criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.ANY);
+                }
+                else if (kwErrorOption != null)
+                {
+                    criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.ERROR);
+                }
+                else if (kwCriticalOption != null)
+                {
+                    criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.CRITICAL);
+                }
+                else
+                {
+                    throw new InvalidInputException("Non of the kwCriteria has been checked");
+                }
+                
+                criteriaProperty.setKWCriteria(true);
+                this.project.removeProperty(CriteriaProperty.class);
+                this.project.addProperty(criteriaProperty);
+                criteriaProperty.saveToFile();
             }
-            else if (kwErrorOption != null)
+            else
             {
+                this.project.removeProperty(CriteriaProperty.class);
                 criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.ERROR);
+                criteriaProperty.setKWCriteria(false);
+                criteriaProperty.saveToFile();
             }
-            else if (kwWarningOption != null)
+            if (testsCriteria != null)
             {
-                criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.WARNING);
+                System.out.println("Option not supported yet");
             }
-            else if (kwAnyOption != null)
-            {
-                criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.ANY);
-            }
+            
         }
-        if (testsCriteria != null)
-        {
-            System.out.println("Option not supported yet");
+        catch(InvalidInputException ex){
+            System.out.println(ex.getMessage());
         }
         
         //Find a better way to redirect the response so it won't be hard coded.
@@ -467,5 +484,30 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     public String getBuildDirPath()
     {
         return mkverConf.getBuildDirPath();
+    }
+    
+    
+    
+    
+    
+    public boolean isKWCriteriaSet()
+    {
+        this.criteriaProperty.initFromFile();
+        return this.project.getProperty(CriteriaProperty.class) != null;
+    }
+    
+    public boolean isKWCriticalSet()
+    {
+        return this.criteriaProperty.isKWCriticalSet();
+    }
+    
+    public boolean isKWErrorSet()
+    {
+        return this.criteriaProperty.isKWErrorSet();
+    }
+    
+    public boolean isKWAnySet()
+    {
+        return this.criteriaProperty.isKWAnySet();
     }
 }

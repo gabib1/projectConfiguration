@@ -1,0 +1,39 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+<l:layout title="Configuration" secured="true">
+<l:header/>
+    <l:side-panel>
+        <l:tasks>
+            <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Jenkins}"/>
+            <l:task icon="images/24x24/up.gif" href="${rootURL}/job/${it.getJobName()}" title="${%Back to }${it.getJobName()}"/>
+            <l:task icon="plugin/projectConfiguration/configuration_icon.jpg" href="index" title="Conf file"/>
+            <l:task icon="plugin/projectConfiguration/schedule-icon-add.png" href="add_schedule" title="Add schedule"/>
+            <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="remove_schedule" title="Remove schedule"/>
+            <l:task icon="plugin/projectConfiguration/criteria-icon.png" href="criteria" title="Fail build criteria"/>
+        </l:tasks>
+    </l:side-panel>
+    <l:main-panel>
+        <H1>${it.getJobName()} Configuration</H1>
+        <form action="removeSchedule" method="post">
+            <table>
+                <tr>
+                    <f:entry title="Existing schedules:">
+                        <select name="existingSchedules">
+                            <j:forEach var="schedule" items="${it.getActiveSchedules()}" varStatus="loop">
+                                <option value="${schedule.toString()}">
+                                    ${schedule.toString()}
+                                </option>
+                            </j:forEach>
+                        </select>
+                    </f:entry>
+                </tr>
+                <tr>
+                    <f:entry title="" >
+                        <f:submit value="remove"/>
+                    </f:entry>
+                </tr>
+            </table>
+        </form>
+    </l:main-panel>
+</l:layout>
+</j:jelly>

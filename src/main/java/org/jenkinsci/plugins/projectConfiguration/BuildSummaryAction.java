@@ -8,6 +8,13 @@ import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Result;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.plugins.projectConfiguration.buildSteps.BuildStepInfo;
@@ -32,6 +39,11 @@ public class BuildSummaryAction implements Action {
     
     BuildSummaryAction(AbstractBuild<?, ?> build) {
         this.build = build;
+        String status = getStatusFromEmail();
+        if (status != null)
+        {
+            this.build.setResult(Result.fromString(status));
+        }
     }
     
     public String getMkverBuildStatus()
@@ -151,5 +163,34 @@ public class BuildSummaryAction implements Action {
             Logger.getLogger(BuildSummaryProjectAction.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
+    }
+
+    private String getStatusFromEmail() {
+        InputStream fis;
+        BufferedReader br;
+        String line;
+        String status = null;
+
+        try 
+        {
+            File jenkinsEmail = new File(this.build.getWorkspace().toURI().getPath() + "/build_" + this.build.getNumber() + "/jenkins_email.txt");
+            fis = new FileInputStream(jenkinsEmail);
+            br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+            while ((line = br.readLine()) != null) 
+            {
+                if(line.startsWith("Subject:") == true)
+                {
+                    // Example of the subject line:
+                    // Subject: Jenkins: Genesis-7.7 build 7.7.0.0.0.32 FAILURE
+                    // we need the last word...
+                    int indexOfLastWord = line.lastIndexOf(' ') + 1;
+                    status = line.substring(indexOfLastWord);
+                    System.out.println("status=" + status);
+                }
+            }
+        }catch(IOException | InterruptedException | NumberFormatException ex){
+            System.out.println(ex.getMessage());
+        }
+        return status;
     }
 }

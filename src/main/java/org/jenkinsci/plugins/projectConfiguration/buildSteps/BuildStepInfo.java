@@ -104,7 +104,7 @@ public class BuildStepInfo {
                     else if (line.startsWith("DETAILS=") == true)
                     {
                         int indexOfEquels = line.indexOf('=') + 1;
-                        this.details = line.substring(indexOfEquels);
+                        this.details = line.substring(indexOfEquels).replaceAll("\\\\/", "/");
                     }
                 }
                 
