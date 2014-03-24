@@ -106,14 +106,14 @@ public class MkverConf
                 }
                 else if (line.startsWith("MAILING_LIST=") == true)
                 {
-                    int indexOfOpenDoubleQuote = line.indexOf('(') + 2;
-                    int indexOfCloseDoubleQuote = line.indexOf(')') - 1;
+                    int indexOfOpenDoubleQuote = line.indexOf('"') + 1;
+                    int indexOfCloseDoubleQuote = line.lastIndexOf('"');
                     this.mailingList = line.substring(indexOfOpenDoubleQuote, indexOfCloseDoubleQuote);
                 }
                 else if (line.startsWith("MAILING_LIST_TESTING=") == true)
                 {
-                    int indexOfOpenDoubleQuote = line.indexOf('(') + 2;
-                    int indexOfCloseDoubleQuote = line.indexOf(')') - 1;
+                    int indexOfOpenDoubleQuote = line.indexOf('"') + 1;
+                    int indexOfCloseDoubleQuote = line.lastIndexOf('"');
                     this.mailingListTesting = line.substring(indexOfOpenDoubleQuote, indexOfCloseDoubleQuote);
                 }
                 else if (line.startsWith("KLOCWORK_PROJECT_NAME=") == true)
@@ -145,7 +145,7 @@ public class MkverConf
 
             br.close();
             
-        } catch (FileNotFoundException ex) {
+        } catch (FileNotFoundException | ArrayIndexOutOfBoundsException | NullPointerException ex) {
             System.out.println("File not found");
 //            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -208,11 +208,11 @@ public class MkverConf
                 }
                 else if (line.startsWith("MAILING_LIST=") == true)
                 {
-                    line = "MAILING_LIST=(\"" + this.mailingList + "\")";
+                    line = "MAILING_LIST=\"" + this.mailingList + "\"";
                 }
                 else if (line.startsWith("MAILING_LIST_TESTING=") == true)
                 {
-                    line = "MAILING_LIST_TESTING=(\"" + this.mailingListTesting + "\")";
+                    line = "MAILING_LIST_TESTING=\"" + this.mailingListTesting + "\"";
                 }
                 else if(line.startsWith("KLOCWORK_PROJECT_NAME=") == true)
                 {
@@ -273,67 +273,67 @@ public class MkverConf
     {
         boolean isNewDataFound = false;
         
-        if (this.projectName.equals(projectName) == false)
+        if (isBlank(new String[]{this.projectName}) == false && this.projectName.equals(projectName) == false)
         {
             isNewDataFound = true;
             this.projectName = projectName;
         }
-        if (this.productName.equals(productName) == false)
+        if (isBlank(new String[]{this.productName}) == false && this.productName.equals(productName) == false)
         {
             isNewDataFound = true;
             this.productName = productName;
         }
-        if (this.streamName.equals(streamName) == false)
+        if (isBlank(new String[]{this.streamName}) == false && this.streamName.equals(streamName) == false)
         {
             isNewDataFound = true;
             this.streamName = streamName;
         }
-        if (this.ccActivity.equals(ccActivity) == false)
+        if (isBlank(new String[]{this.ccActivity}) == false & this.ccActivity.equals(ccActivity) == false)
         {
             isNewDataFound = true;
             this.ccActivity = ccActivity;
         }
-        if(this.logsPath.equals(logsPath) == false)
+        if(isBlank(new String[]{this.logsPath}) == false && this.logsPath.equals(logsPath) == false)
         {
             isNewDataFound = true;
             this.logsPath = logsPath;
         }
-        if (this.rpmPath.equals(rpmPath) == false)
+        if (isBlank(new String[]{this.rpmPath}) == false && this.rpmPath.equals(rpmPath) == false)
         {
             isNewDataFound = true;
             this.rpmPath = rpmPath;
         }
-        if (this.imagePath.equals(imagePath) == false)
+        if (isBlank(new String[]{this.imagePath}) == false && this.imagePath.equals(imagePath) == false)
         {
             isNewDataFound = true;
             this.imagePath = imagePath;
         }
-        if(this.mailingList.equals(mailingList) == false)
+        if(isBlank(new String[]{this.mailingList}) == false && this.mailingList.equals(mailingList) == false)
         {
             isNewDataFound = true;
             this.mailingList = mailingList;
         }
-        if(this.mailingListTesting.equals(mailingListTesting) == false)
+        if(isBlank(new String[]{this.mailingListTesting}) == false && this.mailingListTesting.equals(mailingListTesting) == false)
         {
             isNewDataFound = true;
             this.mailingListTesting = mailingListTesting;
         }
-        if (this.kwProjectName.equals(kwProjectName) == false)
+        if (isBlank(new String[]{this.kwProjectName}) == false && this.kwProjectName.equals(kwProjectName) == false)
         {
             isNewDataFound = true;
             this.kwProjectName = kwProjectName;
         }
-        if (this.kwDirPath.equals(kwDirPath) == false)
+        if (isBlank(new String[]{this.kwDirPath}) == false && this.kwDirPath.equals(kwDirPath) == false)
         {
             isNewDataFound = true;
             this.kwDirPath = kwDirPath;
         }
-        if (this.idcVersionFilePath.equals(idcVersionFilePath) == false)
+        if (isBlank(new String[]{this.idcVersionFilePath}) == false && this.idcVersionFilePath.equals(idcVersionFilePath) == false)
         {
             isNewDataFound = true;
             this.idcVersionFilePath = idcVersionFilePath;
         }
-        if (this.buildDirPath.equals(buildDirPath) == false)
+        if (isBlank(new String[]{this.buildDirPath}) == false && this.buildDirPath.equals(buildDirPath) == false)
         {
             isNewDataFound = true;
             this.buildDirPath = buildDirPath;
@@ -418,4 +418,14 @@ public class MkverConf
         return this.buildDirPath;
     }
     
+    private boolean isBlank(String[] variables)
+    {
+        for (String variable : variables) 
+        {
+            if (variable == null || variable.isEmpty() == true) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
