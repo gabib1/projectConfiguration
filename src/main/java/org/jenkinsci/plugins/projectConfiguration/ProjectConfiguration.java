@@ -4,25 +4,23 @@
  */
 package org.jenkinsci.plugins.projectConfiguration;
 
+import org.jenkinsci.plugins.projectConfiguration.devices.DeviceManager;
 import org.jenkinsci.plugins.projectConfiguration.exceptions.InvalidInputException;
 import antlr.ANTLRException;
-import hudson.DescriptorExtensionList;
-import hudson.Extension;
-import hudson.ExtensionList;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Describable;
-import hudson.model.Descriptor;
 import hudson.security.Permission;
 import hudson.triggers.TimerTrigger;
-import hudson.util.ListBoxModel;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.xml.bind.JAXBException;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.projectConfiguration.devices.Unit;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -41,6 +39,7 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     private final AbstractProject<?, ?> project;
     private MkverConf mkverConf;
     private CriteriaProperty criteriaProperty;
+    private DeviceManager deviceManager;
     
     public ProjectConfiguration() 
     {
@@ -57,6 +56,12 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         // as soon as we create our own project type
         mkverConf = new MkverConf(confFileDir + "/mkver.conf");
         criteriaProperty = new CriteriaProperty(confFileDir + "/criteria.conf");
+        try {
+            deviceManager = new DeviceManager(confFileDir + "/Devices");
+        } catch (JAXBException ex) {
+            System.out.println("Failed to init Device Manager, validate XMLs are written correctly");
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public String getJobName()
@@ -88,11 +93,34 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         
         return schedulesDescription;
     }
+    
+    public ArrayList<Unit> getDevices()
+    {
+        if (deviceManager != null)
+        {
+            try {
+                return deviceManager.getDeviceArr();
+            } catch (JAXBException ex) {
+                System.err.println("Failed to parse XMLs of " + this.project.getName());
+                Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return null;
+    }
+    
+    public ArrayList<String> getDevicesFieldsNames()
+    {
+        if (deviceManager != null)
+        {
+            return DeviceManager.getFieldsNames();
+        }
+        return null;
+    }
 
     @Override
     public String getIconFileName() {
         if (CheckBuildPermissions() == true){
-            return "/plugin/projectConfiguration/configuration_icon.jpg";
+            return "/plugin/projectConfiguration/configuration_icon.png";
         }
         else{
             return null;
@@ -236,6 +264,55 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         
         //Find a better way to redirect the response so it won't be hard coded.
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
+    }
+    
+    // Add new device to current project's device folder (currently unit xml file that fits ATT format)
+    public void doAddDevice(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
+    {
+        Iterator keySetIt = req.getParameterMap().keySet().iterator();
+        Object key;
+        while (keySetIt.hasNext())
+        {
+            key = keySetIt.next();
+            if (req.getParameterValues(key.toString()).length > 1){
+                System.out.println("key: " + key.toString() + ", value: ");
+                for (String parameterValue : req.getParameterValues(key.toString())) {
+                    System.out.println(parameterValue);
+                }
+            }
+            else{
+                System.out.println("key: " + key.toString() + ", value: " + req.getParameter(key.toString()));
+            }
+        }
+        try {
+            System.out.println("Adding new device");
+            deviceManager.addNewDevice(req.getParameterMap());
+        } catch (JAXBException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Failed to add device to project " + this.getJobName());
+        }
+        
+        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/devices");
+    }
+    
+    // Add new device to current project's device folder (currently unit xml file that fits ATT format)
+    public void doRemoveDevice(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
+    {
+        int deviceIndex = -1;
+        try
+        {
+            deviceIndex = Integer.parseInt(req.getParameter("deviceID"));
+            this.deviceManager.removeDevice(deviceIndex);
+        }catch(NumberFormatException ex){
+            System.out.println("Failed to parse deviceID, deviceID = " + req.getParameter("deviceID"));
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }catch(IndexOutOfBoundsException ex){
+            System.out.println("Failed to remove device at index " + deviceIndex + 
+                    " because index is out of bounds, number of devices is " + this.deviceManager.getNumberOfDevices());
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/devices");
     }
     
     /**
@@ -485,10 +562,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     {
         return mkverConf.getBuildDirPath();
     }
-    
-    
-    
-    
     
     public boolean isKWCriteriaSet()
     {

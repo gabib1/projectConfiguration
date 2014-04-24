@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Unit">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element type="xs:string" name="UnitType"/>
+        <xs:element name="WatchFiles">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:string" name="WatchFile" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element type="xs:string" name="TelnetUnitIP"/>
+        <xs:element type="xs:string" name="ComOverTelnetIP"/>
+        <xs:element type="xs:string" name="ComOverTelnetPort"/>
+        <xs:element type="xs:string" name="SerialPort"/>
+        <xs:element type="xs:string" name="RootPassword"/>
+        <xs:element type="xs:string" name="ClishUser"/>
+        <xs:element type="xs:string" name="SWVersion"/>
+        <xs:element type="xs:string" name="Chassis"/>
+        <xs:element type="xs:string" name="DevelopmentVersion"/>
+        <xs:element type="xs:string" name="UnitConfigFile"/>
+        <xs:element name="Slots">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Slot" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:byte" name="Id"/>
+                    <xs:element name="SlotDesc">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element type="xs:string" name="Card"/>
+                          <xs:element name="Links">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="Link" maxOccurs="unbounded" minOccurs="0">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element type="xs:byte" name="Id"/>
+                                      <xs:element type="xs:string" name="Eth"/>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

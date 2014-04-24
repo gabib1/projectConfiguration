@@ -135,6 +135,11 @@ public class BuildSummaryProjectAction implements Action {
         return buildStepInfoFactory(this.project.getLastBuild(), kw, StepNameEnum.KW).getDetails();
     }
     
+    public String getDeploymentDetails()
+    {
+        return buildStepInfoFactory(this.project.getLastBuild(), deployment, StepNameEnum.DEPLOYMENT).getDetails();
+    }
+    
     public int getBuildNumber()
     {
         AbstractBuild<?, ?> lastbuild = project.getLastBuild();

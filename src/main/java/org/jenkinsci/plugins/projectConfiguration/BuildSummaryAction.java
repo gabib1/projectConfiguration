@@ -132,6 +132,11 @@ public class BuildSummaryAction implements Action {
     {
         return buildStepInfoFactory(this.build, kw, StepNameEnum.KW).getDetails();
     }
+    
+    public String getDeploymentDetails()
+    {
+        return buildStepInfoFactory(this.build, deployment, StepNameEnum.DEPLOYMENT).getDetails();
+    }
 
     @Override
     public String getIconFileName() {
