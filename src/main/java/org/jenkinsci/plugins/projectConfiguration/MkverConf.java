@@ -4,7 +4,6 @@
  */
 package org.jenkinsci.plugins.projectConfiguration;
 
-import hudson.model.Environment;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -64,7 +63,7 @@ public class MkverConf
             br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
             while ((line = br.readLine()) != null) 
             {
-                if(line.startsWith("PRJ_NAME=") == true)
+                if(line.startsWith("PRJ_NAME_BASE=") == true)
                 {
                     int indexOfEquels = line.indexOf('=') + 1;
                     this.projectName = line.substring(indexOfEquels);
@@ -178,9 +177,9 @@ public class MkverConf
             BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
             while ((line = br.readLine()) != null) 
             {
-                if(line.startsWith("PRJ_NAME=") == true)
+                if(line.startsWith("PRJ_NAME_BASE=") == true)
                 {
-                    line = "PRJ_NAME=" + this.projectName;
+                    line = "PRJ_NAME_BASE=" + this.projectName;
                 }
                 else if(line.startsWith("PRODUCT_NAME=") == true)
                 {
