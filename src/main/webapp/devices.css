@@ -19,3 +19,15 @@ div#users-contain table { margin: 1em 0; border-collapse: collapse; width: 100%;
 div#users-contain table td, div#users-contain table th { border: 1px solid #eee; padding: .6em 10px; text-align: left; }
 .ui-dialog .ui-state-error { height: 90%; padding: .3em; }
 .validateTips { border: 1px solid transparent; padding: 0.3em; }
+
+#slots-edit-button {
+    background:none!important;
+     border:none; 
+     padding:0!important;
+    
+    /*optional*/
+    font-family:arial,sans-serif; /*input has OS specific font-family*/
+     color:#069;
+     text-decoration:underline;
+     cursor:pointer;
+}

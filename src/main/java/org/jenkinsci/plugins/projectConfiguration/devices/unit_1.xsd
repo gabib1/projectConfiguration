@@ -27,7 +27,7 @@
               <xs:element name="Slot" maxOccurs="unbounded" minOccurs="0">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element type="xs:byte" name="Id"/>
+                    <xs:element type="xs:string" name="Id"/>
                     <xs:element name="SlotDesc">
                       <xs:complexType>
                         <xs:sequence>
@@ -38,8 +38,8 @@
                                 <xs:element name="Link" maxOccurs="unbounded" minOccurs="0">
                                   <xs:complexType>
                                     <xs:sequence>
-                                      <xs:element type="xs:byte" name="Id"/>
-                                      <xs:element type="xs:string" name="Eth"/>
+                                      <xs:element type="xs:string" name="Id"/>
+                                      <xs:element type="xs:string" name="Type"/>
                                     </xs:sequence>
                                   </xs:complexType>
                                 </xs:element>

@@ -4,7 +4,6 @@
  */
 package org.jenkinsci.plugins.projectConfiguration;
 
-import hudson.model.Environment;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -89,7 +88,7 @@ public class MkverConf
                     int indexOfEquels = line.indexOf('=') + 1;
                     this.jenkinsCCActivity = line.substring(indexOfEquels);
                 }
-                else if (line.startsWith("RESULTS_PATH=") == true)
+                else if (line.startsWith("RESULTS_PATH_BASE=") == true)
                 {
                     int indexOfEquels = line.indexOf('=') + 1;
                     this.logsPath = line.substring(indexOfEquels);

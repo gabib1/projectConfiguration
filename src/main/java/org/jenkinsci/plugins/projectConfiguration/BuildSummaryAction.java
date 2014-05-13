@@ -66,7 +66,7 @@ public class BuildSummaryAction implements Action {
     
     public String getTestsStatus()
     {
-        this.tests = buildStepInfoFactory(this.build, tests, StepNameEnum.TESTS);
+        this.tests = buildStepInfoFactory(this.build, null, StepNameEnum.TESTS);
         return tests.getStatus();
     }
     
@@ -136,6 +136,11 @@ public class BuildSummaryAction implements Action {
     public String getDeploymentDetails()
     {
         return buildStepInfoFactory(this.build, deployment, StepNameEnum.DEPLOYMENT).getDetails();
+    }
+    
+    public String getTestsDetails()
+    {
+        return buildStepInfoFactory(this.build, tests, StepNameEnum.TESTS).getDetails();
     }
 
     @Override

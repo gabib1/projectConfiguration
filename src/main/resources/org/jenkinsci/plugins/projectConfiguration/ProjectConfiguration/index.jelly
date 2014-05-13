@@ -11,6 +11,7 @@
             <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="remove_schedule" title="Remove schedule"/>
             <l:task icon="plugin/projectConfiguration/fail-icon.png" href="criteria" title="Fail build criteria"/>
             <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices"/>
+            <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles"/>
         </l:tasks>
     </l:side-panel>
     <l:main-panel>

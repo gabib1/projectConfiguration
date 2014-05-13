@@ -23,11 +23,11 @@
                 <Links>
                     <Link>
                         <Id>1</Id>
-                        <Eth>local_eth_3</Eth>
+                        <Type>local_eth_3</Type>
                     </Link>
                     <Link>
                         <Id>2</Id>
-                        <Eth>local_eth_1</Eth>
+                        <Type>local_eth_1</Type>
                     </Link>
                 </Links>
             </SlotDesc>
@@ -39,11 +39,11 @@
                 <Links>
                     <Link>
                         <Id>1</Id>
-                        <Eth>local_eth_2</Eth>
+                        <Type>local_eth_2</Type>
                     </Link>
                     <Link>
                         <Id>2</Id>
-                        <Eth>remote_eth_3</Eth>
+                        <Type>remote_eth_3</Type>
                     </Link>
                 </Links>
             </SlotDesc>

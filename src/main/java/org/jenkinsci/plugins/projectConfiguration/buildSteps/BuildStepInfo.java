@@ -104,7 +104,12 @@ public class BuildStepInfo {
                     else if (line.startsWith("DETAILS=") == true)
                     {
                         int indexOfEquels = line.indexOf('=') + 1;
-                        this.details = line.substring(indexOfEquels).replaceAll("\\\\/", "/");
+                        this.details = line.substring(indexOfEquels).replaceAll("\\\\/", "/"); // for Klocwork case when there is an http in the string
+                        if (this.details.contains("/mnt/RnD") == true) // for case that we have /mnt/RnD we transform it to windows path
+                        {
+                            this.details = this.details.replaceAll("\\/mnt\\/RnD", "\\\\\\\\emcsrv\\/R\\&D");
+                            this.details = this.details.replaceAll("\\/", "\\\\");
+                        }
                     }
                 }
                 

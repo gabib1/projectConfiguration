@@ -12,7 +12,6 @@ import hudson.model.JobPropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,6 +30,7 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?,?>>
 {    
     private KWSeverityEnum kwSeverity;
     private boolean kwFailBuildOnCriteria;
+    private boolean testsFailBuildOnCriteria;
     
     private File f_failCriteria;
     
@@ -41,7 +41,6 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?,?>>
     public CriteriaProperty(String failCritiriaFilePath)
     {
         f_failCriteria = new File(failCritiriaFilePath);
-        
         initFromFile();
     }
     
@@ -60,9 +59,19 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?,?>>
         this.kwFailBuildOnCriteria = isEnabled;
     }
     
-    public boolean setKWCriteria()
+    public boolean getKWCriteria()
     {
         return this.kwFailBuildOnCriteria;
+    }
+    
+    public void setTestsCriteria(boolean isEnabled)
+    {
+        this.testsFailBuildOnCriteria = isEnabled;
+    }
+    
+    public boolean getTestsCriteria()
+    {
+        return this.testsFailBuildOnCriteria;
     }
     
     public void saveToFile(String failCriteriaFilePath)
@@ -75,32 +84,10 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?,?>>
     {
         List<String> newFileContent = new ArrayList<>();
         
-        InputStream fis = null;
         try {
-            if (f_failCriteria.exists() == true)
-            {
-                String line;
-                fis = new FileInputStream(this.f_failCriteria);
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")))) {
-                    while ((line = br.readLine()) != null)
-                    {
-                        if(line.startsWith("KWSeverityCode=") == true)
-                        {
-                            line = "KWSeverityCode=" + this.kwSeverity.getSeverityCode();
-                        }
-                        if(line.startsWith("KWFailBuildOnCriteria=") == true)
-                        {
-                            line = "KWFailBuildOnCriteria=" + (this.kwFailBuildOnCriteria ? "1" : "0");
-                        }
-                        newFileContent.add(line);
-                    }
-                }
-            }
-            else
-            {
-                newFileContent.add("KWSeverityCode=" + this.kwSeverity.getSeverityCode());
-                newFileContent.add("KWFailBuildOnCriteria=" + (this.kwFailBuildOnCriteria ? "1" : "0"));
-            }
+            newFileContent.add("KWSeverityCode=" + this.kwSeverity.getSeverityCode());
+            newFileContent.add("KWFailBuildOnCriteria=" + (this.kwFailBuildOnCriteria ? "1" : "0"));
+            newFileContent.add("TestsFailBuildOnCriteria=" + (this.testsFailBuildOnCriteria ? "1" : "0"));
             try (PrintWriter pw = new PrintWriter(this.f_failCriteria)) {
                 for (String currLine : newFileContent)
                 {
@@ -109,13 +96,7 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?,?>>
             }
         } catch (IOException ex) {
             Logger.getLogger(CriteriaProperty.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException | NullPointerException ex) {
-                Logger.getLogger(CriteriaProperty.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        } 
     }
     
     public void initFromFile()
@@ -129,33 +110,58 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?,?>>
         BufferedReader br;
         String line;
 
-        try 
+        if (f_failCriteria.exists() == true)
         {
-            fis = new FileInputStream(f_failCriteria);
-            br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
-            while ((line = br.readLine()) != null) 
+            try 
             {
-                if(line.startsWith("KWSeverityCode=") == true)
+                fis = new FileInputStream(f_failCriteria);
+                br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+                while ((line = br.readLine()) != null) 
                 {
-                    int indexOfEquels = line.indexOf('=') + 1;
-                    this.kwSeverity = KWSeverityEnum.values()[Integer.parseInt(line.substring(indexOfEquels)) - 1];
+                    if(line.startsWith("KWSeverityCode=") == true)
+                    {
+                        int indexOfEquels = line.indexOf('=') + 1;
+                        this.kwSeverity = KWSeverityEnum.values()[Integer.parseInt(line.substring(indexOfEquels)) - 1];
+                    }
+                    if(line.startsWith("KWFailBuildOnCriteria=") == true)
+                    {
+                        int indexOfEquels = line.indexOf('=') + 1;
+                        String value = line.substring(indexOfEquels);
+                        if (value.equals("1") == true)
+                        {
+                            this.kwFailBuildOnCriteria = true;
+                        }
+                        else
+                        {
+                            this.kwFailBuildOnCriteria = false;
+                        }
+                    }
+                    if(line.startsWith("TestsFailBuildOnCriteria=") == true)
+                    {
+                        int indexOfEquels = line.indexOf('=') + 1;
+                        String value = line.substring(indexOfEquels);
+                        if (value.equals("1") == true)
+                        {
+                            this.testsFailBuildOnCriteria = true;
+                        }
+                        else
+                        {
+                            this.testsFailBuildOnCriteria = false;
+                        }
+                    }
                 }
-//                if(line.startsWith("TestsSeverityCode=") == true)
-//                {
-//                    int indexOfEquels = line.indexOf('=') + 1;
-//                    this.testsSeverity = TestsSeverityEnum.valueOf(line.substring(indexOfEquels));
-//                }
+            }catch(IOException | NumberFormatException ex){
+                System.out.println(ex.getMessage());
             }
-        }catch(IOException | NumberFormatException ex){
-            System.out.println(ex.getMessage());
+        }
+        else
+        {
+            kwSeverity = KWSeverityEnum.ERROR;
+            kwFailBuildOnCriteria = false;
+            testsFailBuildOnCriteria = false;
         }
     }
     
-//    public boolean isKWCriteriaSet()
-//    {
-//        this.owner
-//    }
-
     public boolean isKWCriticalSet()
     {
         return KWSeverityEnum.CRITICAL.getSeverityCode() <= this.kwSeverity.getSeverityCode();
@@ -182,6 +188,7 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?,?>>
     
     public static final JobPropertyDescriptor DESCRIPTOR = new Descriptor(); 
 
+    @Override
     public JobPropertyDescriptor getDescriptor() {
         return DESCRIPTOR;
     }

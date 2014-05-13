@@ -1,0 +1,87 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+<l:layout title="Configuration" secured="true">
+<!--<j:set var="descriptor" value="${it.descriptor}" />-->
+<st:bind var="it" value="${it}" />
+<!--<st:bind var="descriptor" value="${it.descriptor}" />-->
+<script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/slots.js"/>
+<!--The following includes are needed by device-table.js-->
+<script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/jquery-1.11.0.min.js"/>
+<!--<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css"/>-->
+<!--<script src="//code.jquery.com/jquery-1.10.2.js"></script>-->
+<!--<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"/>-->
+<link type="text/css" href="${rootURL}/plugin/projectConfiguration/slots.css" rel="stylesheet" />
+<l:header/>
+    <l:side-panel>
+        <l:tasks>
+            <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Jenkins}"/>
+            <l:task icon="images/24x24/up.gif" href="${rootURL}/job/${it.getJobName()}" title="${%Back to }${it.getJobName()}"/>
+            <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices"/>
+        </l:tasks>
+    </l:side-panel>
+    <l:main-panel>
+
+        <H1>${it.getDeviceIP()} Slots</H1>
+        <form action="saveSlotInfo" method="post">
+            <input type="hidden" name="deviceID" value="${it.getDeviceID()}"/>
+            <table>
+                <tr>
+                    <td>
+                        <label>Choose slot:</label>
+                        <select id="slot-id" name="slot-id" onchange="getSlotInfo();">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                            <option>6</option>
+                            <option>7</option>
+                            <option>8</option>
+                            <option>9</option>
+                            <option>10</option>
+                            <option>11</option>
+                            <option>12</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>Card name:</label>
+                        <input type="textbox" id="card-name" name="card-name"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>Link 1:</label>
+                        <input type="textbox" id="link-1-name" name="link-1-name"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>Link 2:</label>
+                        <input type="textbox" id="link-2-name" name="link-2-name"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>Link 3:</label>
+                        <input type="textbox" id="link-3-name" name="link-3-name"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label>Link 4:</label>
+                        <input type="textbox" id="link-4-name" name="link-4-name"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <f:submit name="save-slot-info" value="Save slot info"/>
+                        <f:submit name="remove-slot" value="Remove slot"/>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </l:main-panel>
+</l:layout>
+</j:jelly>

@@ -21,6 +21,7 @@
             <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="remove_schedule" title="Remove schedule"/>
             <l:task icon="plugin/projectConfiguration/fail-icon.png" href="criteria" title="Fail build criteria"/>
             <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices"/>
+            <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles"/>
         </l:tasks>
     </l:side-panel>
     <l:main-panel>
@@ -60,8 +61,8 @@
     <input type="text" name="developmentVersion" id="developmentVersion" value="" class="text ui-widget-content ui-corner-all"/>
     <label for="unitConfigFile">Unit Config File</label>
     <input type="text" name="unitConfigFile" id="unitConfigFile" value="" class="text ui-widget-content ui-corner-all"/>
-    <label for="slots">Slots</label>
-    <input type="text" name="slots" id="slots" value="" class="text ui-widget-content ui-corner-all"/>
+<!--    <label for="slots">Slots</label>
+    <input type="text" name="slots" id="slots" value="" class="text ui-widget-content ui-corner-all"/>-->
   </fieldset>
   </form>
 </div>
@@ -129,7 +130,10 @@
                             ${unit.getUnitConfigFile()}
                         </td>
                         <td id="slots-${counter}">
-                            <!--${unit.getSlots()}-->
+                            <form id="edit-slots-link-form-${counter}" action="slotsRedirect" method="post">
+                                <input type="hidden" name="device-id" value="${counter}"></input>
+                                <input type="submit" id="slots-edit-button" name="slots-edit-button" value="Edit slots"></input>
+                            </form>
                         </td>
                         <td>
                             <img src="${rootURL}/plugin/projectConfiguration/edit-icon.png" style="cursor:pointer" alt="Edit device" onclick='editDevice("${counter}")' height="16" width="16"/>

@@ -11,8 +11,16 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.security.Permission;
 import hudson.triggers.TimerTrigger;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -20,9 +28,11 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.xml.bind.JAXBException;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.projectConfiguration.devices.Unit;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 /**
  * @author gabi
@@ -36,10 +46,13 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     
     private String confFileDir;
     
+    public static String ProfilesDBPath;
     private final AbstractProject<?, ?> project;
     private MkverConf mkverConf;
     private CriteriaProperty criteriaProperty;
     private DeviceManager deviceManager;
+    private int deviceID;       // This parameter is used when Edit slots button is pressed inorder to edit the chosen device slots
+    private int chosenSlotID = 1;       // This slot ID is to remember the user's choice in the slots page
     
     public ProjectConfiguration() 
     {
@@ -62,6 +75,7 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
             System.out.println("Failed to init Device Manager, validate XMLs are written correctly");
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }
+        ProjectConfiguration.ProfilesDBPath = "/home/" + username + "/profilesDB";
     }
     
     public String getJobName()
@@ -99,13 +113,62 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         if (deviceManager != null)
         {
             try {
-                return deviceManager.getDeviceArr();
+                return this.deviceManager.getDeviceArr();
             } catch (JAXBException ex) {
                 System.err.println("Failed to parse XMLs of " + this.project.getName());
+                Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
                 Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return null;
+    }
+    
+    public ArrayList<String> getAvailableProfiles()
+    {
+        ArrayList<String> profiles = new ArrayList<String>();
+        File profileDBDir = new File(ProjectConfiguration.ProfilesDBPath);
+        if (profileDBDir.isDirectory() == true)
+        {
+            File[] profileFiles = profileDBDir.listFiles(new ProfilesFileFilter());
+            for (File file : profileFiles)
+            {
+                profiles.add(file.getName().replaceAll(".profile", ""));
+            }
+        }
+        else
+        {
+            System.out.println("[ERROR] Profiles DB doesn't exist under " + profileDBDir.getAbsolutePath());
+        }
+
+        return profiles;
+    }
+    
+    public ArrayList<String> getChosenProfiles()
+    {
+        ArrayList<String> profiles = new ArrayList<String>();
+        File profilesFile = new File(this.confFileDir + "/tests_profiles.txt");
+        if (profilesFile.exists() == true)
+        {
+            InputStream fis;
+            BufferedReader br;
+            String line;
+
+            try 
+            {
+                fis = new FileInputStream(profilesFile);
+                br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+                while ((line = br.readLine()) != null) 
+                {
+                    profiles.add(line.replace(".profile", ""));
+                }
+                br.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return profiles;
     }
     
     public ArrayList<String> getDevicesFieldsNames()
@@ -214,6 +277,7 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         String kwErrorOption = req.getParameter("kw-error");
         String kwAnyOption = req.getParameter("kw-any");
         
+        System.out.println("testsCriteria=" + testsCriteria);
         System.out.println("kwCriteria=" + kwCriteria);
         System.out.println("kwCriticalOption=" + kwCriticalOption);
         System.out.println("kwErrorOption=" + kwErrorOption);
@@ -239,31 +303,28 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
                 {
                     throw new InvalidInputException("Non of the kwCriteria has been checked");
                 }
-                
                 criteriaProperty.setKWCriteria(true);
-                this.project.removeProperty(CriteriaProperty.class);
-                this.project.addProperty(criteriaProperty);
-                criteriaProperty.saveToFile();
             }
             else
             {
-                this.project.removeProperty(CriteriaProperty.class);
                 criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.ERROR);
                 criteriaProperty.setKWCriteria(false);
-                criteriaProperty.saveToFile();
             }
             if (testsCriteria != null)
             {
-                System.out.println("Option not supported yet");
+                criteriaProperty.setTestsCriteria(true);
             }
-            
+            else
+            {
+                criteriaProperty.setTestsCriteria(false);
+            }
+            criteriaProperty.saveToFile();
         }
         catch(InvalidInputException ex){
             System.out.println(ex.getMessage());
         }
         
-        //Find a better way to redirect the response so it won't be hard coded.
-        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
+        rsp.sendRedirect2(req.getReferer());
     }
     
     // Add new device to current project's device folder (currently unit xml file that fits ATT format)
@@ -295,7 +356,6 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/devices");
     }
     
-    // Add new device to current project's device folder (currently unit xml file that fits ATT format)
     public void doRemoveDevice(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
     {
         int deviceIndex = -1;
@@ -313,6 +373,128 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         }
         
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/devices");
+    }
+    
+    public void doSlotsRedirect(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
+    {
+        String slotFormSubmitButton = req.getParameter("slots-edit-button");
+        String deviceIdStr = req.getParameter("device-id");
+        System.out.println("device-id-string=" + deviceIdStr);
+        System.out.println("slots-edit-button=" + slotFormSubmitButton);
+        if (slotFormSubmitButton != null && slotFormSubmitButton.equals("") != true)
+        {
+            try{
+                this.deviceID = Integer.parseInt(deviceIdStr);
+                rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/slots");
+            }catch(NumberFormatException ex){
+                System.out.println("DeviceIdStr couldn't be parsed, value: " + deviceIdStr);
+                Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+                rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/devices");
+            }
+        }
+        else
+        {
+            rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/devices");
+        }
+    }
+    
+    public void doSaveSlotInfo(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException, JAXBException 
+    {
+        String saveSlotInfoButton = req.getParameter("save-slot-info");
+        String removeSlotButton = req.getParameter("remove-slot");
+        String slotIdStr = req.getParameter("slot-id");
+        String deviceIDStr = req.getParameter("deviceID");
+        String cardName = req.getParameter("card-name");
+        String[] linkArr = new String[4];
+        for (int i = 0; i < 4; i++)
+        {
+            String linkContent = req.getParameter("link-" + (i+1) + "-name");
+            if (StringUtils.isBlank(linkContent) == false)
+            {
+                linkArr[i] = linkContent;
+            }
+        }
+        
+        System.out.println("slot-id-string=" + slotIdStr);
+        System.out.println("deviceID-string=" + deviceIDStr);
+        System.out.println("cardName=" + cardName);
+        try{
+            int slotID = Integer.parseInt(slotIdStr);
+            this.chosenSlotID = slotID;
+            int deviceID = Integer.parseInt(deviceIDStr);
+            if (saveSlotInfoButton != null)
+            {
+                this.deviceManager.addSlot(deviceID, slotID, cardName, linkArr);
+            }
+            else if (removeSlotButton != null)
+            {
+                this.deviceManager.removeSlot(deviceID, slotID);
+            }
+        }catch(NumberFormatException ex){
+            System.out.println("deviceIDStr or slotIdStr couldn't be parsed, slotIdStr=" + slotIdStr + ", deviceIDStr=" + deviceIDStr);
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/slots");
+    }
+    
+    @JavaScriptMethod
+    public String doGetChosenSlotId()
+    {
+        String chosenSlotIDStr = String.valueOf(this.chosenSlotID);
+//        this.chosenSlotID = 1;
+        System.out.println("chosenSlotIDStr=" + chosenSlotIDStr);
+        return chosenSlotIDStr;
+    }
+    
+    @JavaScriptMethod
+    public String doGetSlotCardName(String slotId)
+    {
+        try 
+        {
+            return this.deviceManager.getSlotCardName(deviceID, Integer.parseInt(slotId));
+        }catch  (NumberFormatException ex){
+            System.out.println("Failed to parse slodId: " + slotId);
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+    
+    @JavaScriptMethod
+    public String doGetSlotLinkName(String slotId, String linkId)
+    {
+        try 
+        {
+            return this.deviceManager.getSlotLinkName(deviceID, Integer.parseInt(slotId), Integer.parseInt(linkId));
+        }catch  (NumberFormatException ex){
+            System.out.println("Failed to parse slodId(" + slotId + ") or linkId(" + linkId + ")");
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+    
+    public void doTestsProfiles(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException 
+    {
+        System.out.println("In doTestsProfile");
+        String[] profiles = req.getParameterValues("chosen-profiles-list");
+        File profilesFile = new File(this.confFileDir + "/tests_profiles.txt");
+        PrintWriter pw = new PrintWriter(profilesFile);
+        
+        if (profiles != null)
+        {
+            for (String profile : profiles) 
+            {
+                System.out.println("profile: " + profile);
+                if (new File(ProjectConfiguration.ProfilesDBPath + "/" + profile + ".profile").exists() == true)
+                {
+                    pw.println(profile + ".profile");
+                }
+//                tests.addAll(Files.readAllLines(Paths.get(ProjectConfiguration.ProfilesDBPath + "/" + profile + ".profile"), Charset.defaultCharset()));
+            }
+            
+            pw.close();
+        }
+
+        rsp.sendRedirect2(req.getReferer());
     }
     
     /**
@@ -563,10 +745,41 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
         return mkverConf.getBuildDirPath();
     }
     
+    public String getDeviceIP() throws JAXBException
+    {
+        try{
+            return this.deviceManager.getDeviceArr().get(this.deviceID).getTelnetUnitIP();
+        } catch (IOException ex) {
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+    
+    public int getDeviceID()
+    {
+        return this.deviceID;
+    }
+    
     public boolean isKWCriteriaSet()
     {
         this.criteriaProperty.initFromFile();
-        return this.project.getProperty(CriteriaProperty.class) != null;
+        if (this.criteriaProperty.getKWCriteria() == true)
+        {
+            System.out.println("KW criteria is set");
+            return true;
+        }
+        System.out.println("KW criteria is not set");
+        return false;
+    }
+    
+    public boolean isTestsCriteriaSet()
+    {
+        this.criteriaProperty.initFromFile();
+        if (this.criteriaProperty.getTestsCriteria() == true)
+        {
+            return true;
+        }
+        return false;
     }
     
     public boolean isKWCriticalSet()
@@ -582,5 +795,13 @@ public class ProjectConfiguration implements Action{//, Describable<ProjectConfi
     public boolean isKWAnySet()
     {
         return this.criteriaProperty.isKWAnySet();
+    }
+
+    private class ProfilesFileFilter implements FileFilter 
+    {
+        @Override
+        public boolean accept(File pathname) {
+            return pathname.getName().endsWith(".profile");
+        }
     }
 }
