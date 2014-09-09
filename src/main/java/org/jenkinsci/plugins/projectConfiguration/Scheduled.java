@@ -59,7 +59,7 @@ public class Scheduled{// implements Describable<Scheduled>{
         }
     }
     
-    private String convertHourByMeridiem(String hour, String meridiem)
+    public String convertHourByMeridiem(String hour, String meridiem)
     {
         int hourNum;
         
