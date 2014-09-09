@@ -24,85 +24,74 @@ import org.jenkinsci.plugins.projectConfiguration.exceptions.ScriptPluginInterac
  * @author gabi
  */
 public class BuildStepInfo {
-    
+
     protected String status;
     protected String img;
     protected String details;
-    
-    public BuildStepInfo(AbstractBuild<?, ?> build, StepNameEnum stepName) throws ScriptPluginInteractionException
-    {
+
+    public BuildStepInfo(AbstractBuild<?, ?> build, StepNameEnum stepName) throws ScriptPluginInteractionException {
         initInfo(build, stepName);
     }
-    
-    public String getStatus()
-    {
+
+    public String getStatus() {
         return this.status;
     }
-    
-    public String getImg()
-    {
+
+    public String getImg() {
         return this.img;
     }
-    
-    public String getDetails()
-    {
+
+    public String getDetails() {
         return this.details;
     }
-    
-    public void initInfo(AbstractBuild<?, ?> build, StepNameEnum stepName) throws ScriptPluginInteractionException
-    {
-        try 
-        {
+
+    public void initInfo(AbstractBuild<?, ?> build, StepNameEnum stepName) throws ScriptPluginInteractionException {
+        try {
             File buildWorkspacePath = new File(build.getWorkspace().toURI().getPath() + "/build_" + build.getNumber());
-            if (buildWorkspacePath.isDirectory() == false)
-            {
+            if (buildWorkspacePath.isDirectory() == false) {
                 System.out.println("Build workspace path not found under: " + buildWorkspacePath.getPath());
                 Thread.sleep(250); // This sleep is needed because the script doesn't have enough time to create the "start" file
             }
-            
-            File f_start = new File(buildWorkspacePath + "/" + stepName.name().toLowerCase() + "_start_" + build.getNumber() + ".info");
-            File f_finish = new File(buildWorkspacePath + "/" + stepName.name().toLowerCase() + "_finish_" + build.getNumber() + ".info");
-            
-            if (f_start.exists() == true)
-            {
-                if (build.isBuilding() == true)
-                {
+
+            File f_start = new File(buildWorkspacePath + "/" + stepName.name().toLowerCase() + "_start_" + build.getNumber() + ".txt");
+            File f_finish = new File(buildWorkspacePath + "/" + stepName.name().toLowerCase() + "_finish_" + build.getNumber() + ".txt");
+
+            // --oren--the file extension can be or txt or .info if the txt not exist it may be .txt or that the file does not exist
+            if (!f_start.exists()) {
+                f_start = new File(buildWorkspacePath + "/" + stepName.name().toLowerCase() + "_start_" + build.getNumber() + ".info");
+            }
+            if (!f_finish.exists()) {
+                f_finish = new File(buildWorkspacePath + "/" + stepName.name().toLowerCase() + "_finish_" + build.getNumber() + ".info");
+            }
+
+            if (f_start.exists() == true) {
+                if (build.isBuilding() == true) {
                     this.status = "In progress";
                     this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY_ANIME.getImage();
                     this.details = null;
-                }
-                else if (build.getResult().completeBuild == false)
-                {
+                } else if (build.getResult().completeBuild == false) {
                     this.status = "ABORTED";
                     this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
                     this.details = null;
-                }
-                else
-                {
+                } else {
                     System.out.println("Start file found but build is not in progress and there is no result for the build\nMarking build status as N/A");
                     this.status = "N/A";
                     this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
                     this.details = null;
                 }
-            }
-            else if (f_finish.exists() == true)
-            {
+            } else if (f_finish.exists() == true) {
                 InputStream fis;
                 BufferedReader br;
                 String line;
 
                 fis = new FileInputStream(f_finish);
                 br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
-                
-                while ((line = br.readLine()) != null) 
-                {
-                    if (line.startsWith("STATUS=") == true)
-                    {
+
+                while ((line = br.readLine()) != null) {
+                    if (line.startsWith("STATUS=") == true) {
                         int indexOfEquels = line.indexOf('=') + 1;
                         this.status = line.substring(indexOfEquels);
-                    }
-                    else if (line.startsWith("DETAILS=") == true)
-                    {
+                    } else if (line.startsWith("DETAILS=") == true) {
                         int indexOfEquels = line.indexOf('=') + 1;
                         this.details = line.substring(indexOfEquels).replaceAll("\\\\/", "/"); // for Klocwork case when there is an http in the string
                         if (this.details.contains("/mnt/RnD") == true) // for case that we have /mnt/RnD we transform it to windows path
@@ -112,37 +101,27 @@ public class BuildStepInfo {
                         }
                     }
                 }
-                
-                if (this.details == null || this.status == null)
-                {
+
+                if (this.details == null || this.status == null) {
                     throw new NullPointerException("this.details=" + this.details + "\n"
                             + "this.status=" + this.status + "\n");
                 }
-                
-                if (this.status.compareTo("SUCCESS") == 0)
-                {
-                    this.img =  BuildSummaryAction.statusPicsDir + BallColor.BLUE.getImage();
-                }
-                else if(this.status.compareTo("ERROR") == 0)
-                {
-                    this.img =  BuildSummaryAction.statusPicsDir + BallColor.RED.getImage();
-                }
-                else if(this.status.compareTo("FAILURE") == 0)
-                {
-                    this.img =  BuildSummaryAction.statusPicsDir + BallColor.RED.getImage();
-                }
-                else 
-                {
+
+                if (this.status.compareTo("SUCCESS") == 0) {
+                    this.img = BuildSummaryAction.statusPicsDir + BallColor.BLUE.getImage();
+                } else if (this.status.compareTo("ERROR") == 0) {
+                    this.img = BuildSummaryAction.statusPicsDir + BallColor.RED.getImage();
+                } else if (this.status.compareTo("FAILURE") == 0) {
+                    this.img = BuildSummaryAction.statusPicsDir + BallColor.RED.getImage();
+                } else {
                     this.status = "N/A";
                     this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
                     this.details = null;
                     throw new ScriptPluginInteractionException("Unknown status value: " + this.status);
                 }
-                
+
                 br.close();
-            }
-            else
-            {
+            } else {
                 System.out.println("No build files found, " + f_start + ", " + f_finish + "\nMarking build status as N/A");
                 this.status = "N/A";
                 this.img = BuildSummaryAction.statusPicsDir + BallColor.GREY.getImage();
@@ -150,6 +129,6 @@ public class BuildStepInfo {
             }
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(BuildStepInfo.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        }
     }
 }
