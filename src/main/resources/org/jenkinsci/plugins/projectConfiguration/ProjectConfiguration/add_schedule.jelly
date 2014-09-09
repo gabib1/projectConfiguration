@@ -1,137 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-<l:layout title="Configuration" secured="true">
-<l:header/>
-    <l:side-panel>
-        <l:tasks>
-            <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Jenkins}"/>
-            <l:task icon="images/24x24/up.gif" href="${rootURL}/job/${it.getJobName()}" title="${%Back to }${it.getJobName()}"/>
-            <l:task icon="plugin/projectConfiguration/configuration_icon.png" href="index" title="Conf file"/>
-            <l:task icon="plugin/projectConfiguration/schedule-icon-add.png" href="add_schedule" title="Add schedule"/>
-            <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="remove_schedule" title="Remove schedule"/>
-            <l:task icon="plugin/projectConfiguration/fail-icon.png" href="criteria" title="Fail build criteria"/>
-            <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices"/>
-            <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles"/>
-        </l:tasks>
-    </l:side-panel>
-    <l:main-panel>
-        <H1>${it.getJobName()} Configuration</H1>
-        <form action="submitSchedule" method="post">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:l="/lib/layout" xmlns:p="/lib/hudson/project" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
+<script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/jquery-1.11.0.min.js" />  
+<script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/addScheduleJS.js" />
+
+ <l:layout title="Configuration" secured="true">
+      <l:header />
+      <l:side-panel>
+         <l:tasks>
+            <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Jenkins}" />
+            <l:task icon="images/24x24/up.gif" href="${rootURL}/job/${it.getJobName()}" title="${%Back to }${it.getJobName()}" />
+            <l:task icon="plugin/projectConfiguration/configuration_icon.png" href="index" title="Conf file" />
+            <l:task icon="plugin/projectConfiguration/schedule-icon-add.png" href="add_schedule" title="Add schedule" />
+            <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="remove_schedule" title="Remove schedule" />
+            <l:task icon="plugin/projectConfiguration/checkbox.png" href="defaultParam" title="Default parameters" />
+            <l:task icon="plugin/projectConfiguration/fail-icon.png" href="criteria" title="Fail build criteria" />
+            <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices" />
+            <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles" />
+         </l:tasks>
+      </l:side-panel>
+      <l:main-panel>
+         <H1>${it.getJobName()} Configuration</H1>
+         <form name="form" action="submitSchedule" onsubmit="return validateForm()" method="post">
             <table>
-                <tr>
-                    <tr>
-                        <f:entry title="Name:">
-                            <f:textbox name="scheduleName" value="${it.getJobName()} Daily" 
-                                    style="width: 150px"/>
-                        </f:entry>
-                    </tr>
-                    <tr>
-                        <f:entry title="">
-                            <div style="text-decoration: underline">Details:</div>
-                        </f:entry>
-                    </tr>
-                    <tr>
-                        <f:entry title="Start:">
-                            <select name="ScheduleTime-hour">
-                                <option value="00">00</option>
-                                <option value="01">01</option>
-                                <option value="02">02</option>
-                                <option value="03">03</option>
-                                <option value="04">04</option>
-                                <option value="05">05</option>
-                                <option value="06">06</option>
-                                <option value="07">07</option>
-                                <option value="08">08</option>
-                                <option value="09">09</option>
-                                <option value="10">10</option>
-                                <option value="11">11</option>
-                            </select>
-                            <select name="ScheduleTime-minute">
-                                <option value="00">00</option>
-                                <option value="05">05</option>
-                                <option value="10">10</option>
-                                <option value="15">15</option>
-                                <option value="20">20</option>
-                                <option value="25">25</option>
-                                <option value="30">30</option>
-                                <option value="35">35</option>
-                                <option value="40">40</option>
-                                <option value="45">45</option>
-                                <option value="50">50</option>
-                                <option value="55">55</option>
-                            </select>
-                            <select name="ScheduleTime-meridiem">
-                                <option value="AM">AM</option>
-                                <option value="PM">PM</option>
-                            </select>
-                        </f:entry>
-                    </tr>
-                    <f:radioBlock name="type" value="Daily" checked="true" title="Daily"/>
-                    <f:radioBlock name="type" value="Weekly" checked="false" title="Weekly">
-                        <f:entry title="">
-                            <f:checkbox value="Sunday" name="Sunday" title="Sunday"/>
-                        </f:entry>
-                        <f:entry title="">
-                            <f:checkbox value="Monday" name="Monday" title="Monday"/>
-                        </f:entry>
-                        <f:entry title="">
-                            <f:checkbox value="Tuesday" name="Tuesday" title="Tuesday"/>
-                        </f:entry>
-                        <f:entry title="">
-                            <f:checkbox value="Wednesday" name="Wednesday" title="Wednesday"/>
-                        </f:entry>
-                        <f:entry title="">
-                            <f:checkbox value="Thursday" name="Thursday" title="Thursday"/>
-                        </f:entry>
-                        <f:entry title="">
-                            <f:checkbox value="Friday" name="Friday" title="Friday"/>
-                        </f:entry>
-                        <f:entry title="">
-                            <f:checkbox value="Saturday" name="Saturday" title="Saturday"/>
-                        </f:entry>
-                    </f:radioBlock>
-                    <f:radioBlock name="type" value="Monthly" checked="false" title="Monthly">
-                        <f:entry title="">
-                            <select name="DateOfMonth">
-                                <option value="01">01</option>
-                                <option value="02">02</option>
-                                <option value="03">03</option>
-                                <option value="04">04</option>
-                                <option value="05">05</option>
-                                <option value="06">06</option>
-                                <option value="07">07</option>
-                                <option value="08">08</option>
-                                <option value="09">09</option>
-                                <option value="10">10</option>
-                                <option value="11">11</option>
-                                <option value="12">12</option>
-                                <option value="13">13</option>
-                                <option value="14">14</option>
-                                <option value="15">15</option>
-                                <option value="16">16</option>
-                                <option value="17">17</option>
-                                <option value="18">18</option>
-                                <option value="19">19</option>
-                                <option value="20">20</option>
-                                <option value="21">21</option>
-                                <option value="22">22</option>
-                                <option value="23">23</option>
-                                <option value="24">24</option>
-                                <option value="25">25</option>
-                                <option value="26">26</option>
-                                <option value="27">27</option>
-                                <option value="28">28</option>
-                            </select>
-                        </f:entry>
-                    </f:radioBlock>
-                </tr>
-                <tr>
-                    <f:entry title="" >
-                        <f:submit value="Save"/>
-                    </f:entry>
-                </tr>
+               <tr>
+                  <tr>
+                     <f:entry title="Name:">
+                        <f:textbox name="scheduleName" id="scheduleName" placeholder="Enter a name" style="width: 150px" />
+                     </f:entry>
+                  </tr>
+                  <tr>
+                     <f:entry title="">
+                        <div style="text-decoration: underline">Details:</div>
+                     </f:entry>
+                  </tr>
+                  <tr>
+                     <f:entry title="Start:">
+                        <select name="ScheduleTime-hour">
+                           <option value="00">00</option>
+                           <option value="01">01</option>
+                           <option value="02">02</option>
+                           <option value="03">03</option>
+                           <option value="04">04</option>
+                           <option value="05">05</option>
+                           <option value="06">06</option>
+                           <option value="07">07</option>
+                           <option value="08">08</option>
+                           <option value="09">09</option>
+                           <option value="10">10</option>
+                           <option value="11">11</option>
+                        </select>
+                        <select name="ScheduleTime-minute">
+                           <option value="00">00</option>
+                           <option value="05">05</option>
+                           <option value="10">10</option>
+                           <option value="15">15</option>
+                           <option value="20">20</option>
+                           <option value="25">25</option>
+                           <option value="30">30</option>
+                           <option value="35">35</option>
+                           <option value="40">40</option>
+                           <option value="45">45</option>
+                           <option value="50">50</option>
+                           <option value="55">55</option>
+                        </select>
+                        <select name="ScheduleTime-meridiem">
+                           <option value="AM">AM</option>
+                           <option value="PM">PM</option>
+                        </select>
+                     </f:entry>
+                  </tr>
+                  <f:radioBlock name="type" value="Daily" checked="true" title="Daily" />
+                  <f:radioBlock name="type" value="Weekly" checked="false" title="Weekly">
+                     <f:entry title="">
+                        <f:checkbox value="Sunday" name="Sunday" title="Sunday" />
+                      </f:entry>
+
+                     <f:entry title="">
+                        <f:checkbox value="Monday" name="Monday" title="Monday" />
+                     </f:entry>
+
+                     <f:entry title="">
+                        <f:checkbox value="Tuesday" name="Tuesday" title="Tuesday" />
+                     </f:entry>
+
+                     <f:entry title="">
+                        <f:checkbox value="Wednesday" name="Wednesday" title="Wednesday" />
+                     </f:entry>
+
+                     <f:entry title="">
+                        <f:checkbox value="Thursday" name="Thursday" title="Thursday" />
+                     </f:entry>
+
+                     <f:entry title="">
+                        <f:checkbox value="Friday" name="Friday" title="Friday" />
+                     </f:entry>
+
+                     <f:entry title="">
+                        <f:checkbox value="Saturday" name="Saturday" title="Saturday" />
+                     </f:entry>
+
+                  </f:radioBlock>
+                  <f:radioBlock name="type" value="Monthly" checked="false" title="Monthly">
+                     <f:entry title="">
+                        <select name="DateOfMonth">
+                           <option value="01">01</option>
+                           <option value="02">02</option>
+                           <option value="03">03</option>
+                           <option value="04">04</option>
+                           <option value="05">05</option>
+                           <option value="06">06</option>
+                           <option value="07">07</option>
+                           <option value="08">08</option>
+                           <option value="09">09</option>
+                           <option value="10">10</option>
+                           <option value="11">11</option>
+                           <option value="12">12</option>
+                           <option value="13">13</option>
+                           <option value="14">14</option>
+                           <option value="15">15</option>
+                           <option value="16">16</option>
+                           <option value="17">17</option>
+                           <option value="18">18</option>
+                           <option value="19">19</option>
+                           <option value="20">20</option>
+                           <option value="21">21</option>
+                           <option value="22">22</option>
+                           <option value="23">23</option>
+                           <option value="24">24</option>
+                           <option value="25">25</option>
+                           <option value="26">26</option>
+                           <option value="27">27</option>
+                           <option value="28">28</option>
+                        </select>
+                     </f:entry>
+                  </f:radioBlock>
+               </tr>
+               <tr>
+                  <f:entry title="">
+                     <div style="text-decoration: underline">Create unique parameters for the run:</div>
+                  </f:entry>
+               </tr>
+               <f:radioBlock name="parameters" value="false" checked="true" title="Use default parameters" />
+               <f:radioBlock name="parameters" value="true" checked="false" title="parameter for the schdeuler" id="id">
+                  <j:forEach var="parameterValue" items="${it.getParameters()}" varStatus="loop">
+                     <f:entry title="">
+                        <f:checkbox value="${parameterValue.getName()}" name="${parameterValue.getName()}" title="${parameterValue.getName()}" />
+                     </f:entry>
+                  </j:forEach>
+               </f:radioBlock>
+               <tr>
+                  <f:entry title="">
+                     <f:submit value="Save" />
+                  </f:entry>
+               </tr>
             </table>
-        </form>
-    </l:main-panel>
-</l:layout>
+         </form>
+      </l:main-panel>
+   </l:layout>
 </j:jelly>

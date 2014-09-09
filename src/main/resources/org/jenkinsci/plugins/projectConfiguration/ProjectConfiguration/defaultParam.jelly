@@ -17,41 +17,26 @@
     </l:side-panel>
     <l:main-panel>
         <H1>${it.getJobName()} Configuration</H1>
-        <form action="failCriteria" method="post">
+        <H3>This build default parameters </H3>
+
+        <form action="submitParam" method="post">
+            
             <table>
+                <j:forEach var="parameterValue" items="${it.getParameters()}" varStatus="loop">
+                        <tr>
+                            <td style="text-indent:25px;">
+                                <f:checkbox name="${parameterValue.getName()}" value="${parameterValue.getName()}" title="${parameterValue.getName()}" checked="${parameterValue.isDefaultValue()}"/>
+                            </td>
+                        </tr>
+                </j:forEach>
                 <tr>
-                    <f:entry title="">
-                        <f:optionalBlock name="Klocwork" value="Klocwork" title="Klocwork" checked="${it.isKWCriteriaSet()}">
-                            <tr>
-                                <f:entry title="">
-                                    <f:checkbox name="kw-critical" value="kw-critical" title="On criticals" checked="${it.isKWCriticalSet()}"/>
-                                </f:entry>
-                            </tr>
-                            <tr>
-                                <f:entry title="">
-                                    <f:checkbox name="kw-error" value="kw-error" title="On errors" checked="${it.isKWErrorSet()}"/>
-                                </f:entry>
-                            </tr>
-                            <tr>
-                                <f:entry title="">
-                                    <f:checkbox name="kw-any" value="kw-any" title="On any issue" checked="${it.isKWAnySet()}"/>
-                                </f:entry>
-                            </tr>
-                        </f:optionalBlock>
-                    </f:entry>
-                </tr>
-                <tr>
-                    <f:entry title="">
-                        <f:optionalBlock name="Tests" value="Tests" title="Tests" checked="${it.isTestsCriteriaSet()}"/>
-                    </f:entry>
-                </tr>
-                <tr>
-                    <f:entry title="" >
-                        <f:submit value="Save"/>
-                    </f:entry>
+                    <td>
+                        <f:submit name="profile-save-submit" value="Save"/>
+                    </td>
                 </tr>
             </table>
         </form>
+
     </l:main-panel>
 </l:layout>
 </j:jelly>

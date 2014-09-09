@@ -13,7 +13,8 @@
             <l:task icon="images/24x24/up.gif" href="${rootURL}/job/${it.getJobName()}" title="${%Back to }${it.getJobName()}"/>
             <l:task icon="plugin/projectConfiguration/configuration_icon.png" href="index" title="Conf file"/>
             <l:task icon="plugin/projectConfiguration/schedule-icon-add.png" href="add_schedule" title="Add schedule"/>
-            <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="remove_schedule" title="Remove schedule"/>
+            <l:task icon="plugin/projectConfiguration/checkbox.png" href="defaultParam" title="Default parameters" />
+            <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="defualtParam" title="Default parameters"/>
             <l:task icon="plugin/projectConfiguration/fail-icon.png" href="criteria" title="Fail build criteria"/>
             <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices"/>
             <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles"/>
