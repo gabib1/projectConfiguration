@@ -42,9 +42,16 @@
                 </tr>
                 <tr>
                     <f:entry title="">
+                        <f:optionalBlock name="Deployment" value="Deployment" title="Deployment" checked="${it.isDeploymentCriteriaSet()}"/>
+                    </f:entry>
+                </tr>
+
+                <tr>
+                    <f:entry title="">
                         <f:optionalBlock name="Tests" value="Tests" title="Tests" checked="${it.isTestsCriteriaSet()}"/>
                     </f:entry>
                 </tr>
+
                 <tr>
                     <f:entry title="" >
                         <f:submit value="Save"/>

@@ -87,26 +87,21 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
         return project.getName();
     }
 
-     public ArrayList<String> getAvailableProfiles()
-    {
+    public ArrayList<String> getAvailableProfiles() {
         ArrayList<String> profiles = new ArrayList<String>();
         File profileDBDir = new File(ProjectConfiguration.ProfilesDBPath);
-        if (profileDBDir.isDirectory() == true)
-        {
+        if (profileDBDir.isDirectory() == true) {
             File[] profileFiles = profileDBDir.listFiles(new ProfilesFileFilter());
-            for (File file : profileFiles)
-            {
+            for (File file : profileFiles) {
                 profiles.add(file.getName().replaceAll(".profile", ""));
             }
-        }
-        else
-        {
+        } else {
             System.out.println("[ERROR] Profiles DB doesn't exist under " + profileDBDir.getAbsolutePath());
         }
 
         return profiles;
     }
-     
+
     public ArrayList<String> getActiveSchedules() {
         ArrayList<Scheduled> schedules;
         ArrayList<String> schedulesDescription = new ArrayList<String>();
@@ -179,7 +174,7 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
 
     /**
      * Oren
-     * 
+     *
      * returns an array with the saved parameters in the file
      *
      * @param path
@@ -327,10 +322,12 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
     public void doFailCriteria(StaplerRequest req, StaplerResponse rsp) throws IOException {
         String kwCriteria = req.getParameter("Klocwork");
         String testsCriteria = req.getParameter("Tests");
+        String deploymentCriteria = req.getParameter("Deployment");
         String kwCriticalOption = req.getParameter("kw-critical");
         String kwErrorOption = req.getParameter("kw-error");
         String kwAnyOption = req.getParameter("kw-any");
 
+        System.out.println("deploymentCriteria=" + deploymentCriteria);
         System.out.println("testsCriteria=" + testsCriteria);
         System.out.println("kwCriteria=" + kwCriteria);
         System.out.println("kwCriticalOption=" + kwCriticalOption);
@@ -353,6 +350,14 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
                 criteriaProperty.setKWSevirity(CriteriaProperty.KWSeverityEnum.ERROR);
                 criteriaProperty.setKWCriteria(false);
             }
+
+            //oren
+            if (deploymentCriteria != null) {
+                criteriaProperty.setDeploymentCriteria(true);
+            } else {
+                criteriaProperty.setDeploymentCriteria(false);
+            }
+         
             if (testsCriteria != null) {
                 criteriaProperty.setTestsCriteria(true);
             } else {
@@ -511,24 +516,19 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
 
         rsp.sendRedirect2(req.getReferer());
     }
-    
-    
-     public ArrayList<String> getChosenProfiles()
-    {
+
+    public ArrayList<String> getChosenProfiles() {
         ArrayList<String> profiles = new ArrayList<String>();
         File profilesFile = new File(this.confFileDir + "/tests_profiles.txt");
-        if (profilesFile.exists() == true)
-        {
+        if (profilesFile.exists() == true) {
             InputStream fis;
             BufferedReader br;
             String line;
 
-            try 
-            {
+            try {
                 fis = new FileInputStream(profilesFile);
                 br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
-                while ((line = br.readLine()) != null) 
-                {
+                while ((line = br.readLine()) != null) {
                     profiles.add(line.replace(".profile", ""));
                 }
                 br.close();
@@ -539,7 +539,6 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
 
         return profiles;
     }
-    
 
     /**
      *
@@ -786,6 +785,19 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
         return false;
     }
 
+    /**
+     * Oren
+     *
+     * @return
+     */
+    public boolean isDeploymentCriteriaSet() {
+        this.criteriaProperty.initFromFile();
+        if (this.criteriaProperty.getDeploymentCriteria() == true) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean isKWCriticalSet() {
         return this.criteriaProperty.isKWCriticalSet();
     }
@@ -800,10 +812,10 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
 
     /**
      * Oren returns the default parameters of this project
-     * 
-     * 
      *
-     * @return List<BooleanParameterDefinition>-defaultParameter 
+     *
+     *
+     * @return List<BooleanParameterDefinition>-defaultParameter
      */
     public List<BooleanParameterDefinition> getParameters() {
         DefaultParameter defaultParameter = new DefaultParameter(this.project);
@@ -817,14 +829,14 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
 
     /**
      * Oren
-     * 
+     *
      * return the names of parameters that their default value is true
      *
      * @return
      */
     @JavaScriptMethod
     public ArrayList<String> doGetDefaultParametersInList(String name) throws IOException {
-         System.out.println("In doGetDefaultParametersInList");
+        System.out.println("In doGetDefaultParametersInList");
         DefaultParameter defaultParameter = new DefaultParameter(this.project);
         return defaultParameter.getParametersInList();
 
@@ -832,14 +844,13 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
 
     /**
      * Oren
-     * 
+     *
      * return true if this schedule have a file with parameters saved
      *
      * @return
      */
     @JavaScriptMethod
-    public boolean doFileExist(String schduleName) 
-    {
+    public boolean doFileExist(String schduleName) {
         System.out.println("In doFileExist");
         String fileName = UtilsClass.getTimeOfSchduleFromItsName(schduleName);
         System.out.println("fileName: " + fileName);
@@ -849,8 +860,8 @@ public class ProjectConfiguration implements Action {//, Describable<ProjectConf
 
     }
 
-    private class ProfilesFileFilter implements FileFilter 
-    {
+    private class ProfilesFileFilter implements FileFilter {
+
         @Override
         public boolean accept(File pathname) {
             return pathname.getName().endsWith(".profile");
