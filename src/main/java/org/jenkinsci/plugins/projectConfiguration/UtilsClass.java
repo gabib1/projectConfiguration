@@ -6,7 +6,6 @@
 package org.jenkinsci.plugins.projectConfiguration;
 
 import hudson.model.AbstractProject;
-import hudson.model.BooleanParameterDefinition;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,8 +18,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import org.jenkinsci.plugins.projectConfiguration.exceptions.InvalidInputException;
 import org.kohsuke.stapler.StaplerRequest;
@@ -188,7 +185,8 @@ public class UtilsClass {
      * @return - array of all the values found in the file
      */
     public static ArrayList<String> readValuessFromFile(String filePath) {
-        ArrayList<String> parametersInFile = new ArrayList<String>();
+        //changed   -- test
+        ArrayList<String> parametersInFile = new ArrayList<>();
         File profilesFile = new File(filePath);
         if (profilesFile.exists() == true) {
             InputStream fis;
@@ -234,7 +232,8 @@ public class UtilsClass {
         ArrayList<String> parametersInFile = readValuessFromFile(filePath);
 
         // no file found
-        if (parametersInFile.size() == 0) {
+        // test -- changed
+        if (parametersInFile.isEmpty()) {
             return parametersInFile;
         }
         //for tetsing  printing all calues from the file
@@ -265,8 +264,8 @@ public class UtilsClass {
         for (String key : arguments.keySet()) {
             System.out.println("The Parameter looking for is :   " + key);
 
-            for (Iterator<String> it = parametersInFile.iterator(); it.hasNext();) {
-                String parameterFromFile = it.next();
+            //Test Changed
+            for (String parameterFromFile : parametersInFile) {
                 System.out.println("checking now with : " + parameterFromFile);
                 if (key.equals(parameterFromFile)) {
                     argumnetList.add(arguments.get(key));
@@ -310,16 +309,12 @@ public class UtilsClass {
      * @return boolean i
      *
      */
+    // Changed
     public static boolean fileExists(String path) {
         System.out.println("In UtilClass file Exist");
         File file = new File(path);
-        boolean result = false;
-        if (file.exists()) {
-
-            result = true;
-        } else {
-            result = false;
-        }
+        boolean result;
+        result = file.exists();
         System.out.println("result value is " + result);
         return result;
     }
