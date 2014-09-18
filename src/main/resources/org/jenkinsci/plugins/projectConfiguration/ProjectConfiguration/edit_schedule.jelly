@@ -7,13 +7,14 @@
     <st:bind var="descriptor" value="${it.descriptor}" />
     <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/RemoveScheduleJS.js" />
     <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/jquery-1.11.0.min.js" />
+
+<script src="${rootURL}/plugin/projectConfiguration/jquery.js" type="text/javascript"></script>
+<script src="${rootURL}/plugin/projectConfiguration/jquery.ui.draggable.js" type="text/javascript"></script>
+<script src="${rootURL}/plugin/projectConfiguration/jquery.alerts.js" type="text/javascript"></script>
+<link href="${rootURL}/plugin/projectConfiguration/jquery.alerts.css" rel="stylesheet" type="text/css" media="screen" />
+ 
     <l:header />
-    
-    
     <style>
-      
-      
-      
       button {
         border-radius:5px;
         border:0;
@@ -38,14 +39,14 @@
         <l:task icon="images/24x24/up.gif" href="${rootURL}/job/${it.getJobName()}" title="${%Back to }${it.getJobName()}" />
         <l:task icon="plugin/projectConfiguration/configuration_icon.png" href="index" title="Conf file" />
         <l:task icon="plugin/projectConfiguration/schedule-icon-add.png" href="add_schedule" title="Add schedule" />
-        <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="remove_schedule" title="Remove schedule" />
+        <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="edit_schedule" title="Edit schedule" />
         <l:task icon="plugin/projectConfiguration/checkbox.png" href="defaultParam" title="Default parameters" />
         <l:task icon="plugin/projectConfiguration/fail-icon.png" href="criteria" title="Fail build criteria" />
         <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices" />
         <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles" />
       </l:tasks>
     </l:side-panel>
-    
+
     <l:main-panel>
       <H1>
         ${it.getJobName()} Configuration
@@ -73,16 +74,15 @@
           <tr>
             <td>
               <button type="submit" class="primary" id="button" onclick="return false" >
-                scheduler status
-              </button>
+                scheduler status</button>
             </td>
           </tr>
-          
-          
-          
-          
-          
-          
+          <tr>
+            <td>
+              <f:radioBlock name="active" value="activate" checked="false" title="Active"/>
+              <f:radioBlock name="active" value="stop" checked="false" title="Not active"/>
+            </td>
+          </tr>
           <tr>
             <td>
               <h3 name="title" id="title">
@@ -96,7 +96,7 @@
           <j:forEach var="parameterValue" items="${it.getParameters()}" varStatus="loop">
             <tr>
               <td style="text-indent:25px;">
-                <f:checkbox class="id" name="${parameterValue.getName()}" value="${parameterValue.getName()}" title="${parameterValue.getName()}" onclick="return false" />
+                <f:checkbox name="${parameterValue.getName()}" value="${parameterValue.getName()}" title="${parameterValue.getName()}" onclick="return false" />
               </td>
             </tr>
           </j:forEach>

@@ -31,6 +31,7 @@ public class Scheduled{// implements Describable<Scheduled>{
     
     public String getSpec()
     {
+
         return "#" + description + "\n" + minute + " " + hour + " * * *";
     }
     
