@@ -1,0 +1,60 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+  <l:layout title="Configuration" secured="true">
+    <j:set var="descriptor" value="${it.descriptor}" />
+    <st:bind var="it" value="${it}" />
+    <st:bind var="descriptor" value="${it.descriptor}" />
+    <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/testDependencyJS.js" />
+    <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/jquery-1.11.0.min.js" />
+    <l:header/>
+    <l:side-panel>
+      <l:tasks>
+        <l:task icon="images/24x24/up.gif" href="${rootURL}/" title="${%Back to Jenkins}"/>
+        <l:task icon="images/24x24/up.gif" href="${rootURL}/job/${it.getJobName()}" title="${%Back to }${it.getJobName()}"/>
+        <l:task icon="plugin/projectConfiguration/configuration_icon.png" href="index" title="Conf file"/>
+        <l:task icon="plugin/projectConfiguration/schedule-icon-add.png" href="add_schedule" title="Add schedule"/>
+        <l:task icon="plugin/projectConfiguration/schedule-icon-remove.png" href="edit_schedule" title="Edit schedule" />
+        <l:task icon="plugin/projectConfiguration/checkbox.png" href="defaultParam" title="Default parameters"/>
+        <l:task icon="plugin/projectConfiguration/fail-icon.png" href="criteria" title="Fail build criteria"/>
+        <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices"/>
+        <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles"/>
+        <l:task icon="plugin/projectConfiguration/dependency-icon.png" href="testDependency" title="Tests dependency"/>
+      </l:tasks>
+  </l:side-panel>
+  <l:main-panel>
+    <H1>${it.getJobName()} Configuration</H1>
+    
+    
+    
+    <H3>Test dependency page</H3>
+     <H3> Current Dependency is : ${it.getNameDepenedency()} </H3>
+    <form action="choseDepenedencyOption" method="post" onsubmit="return validateForm()"> 
+      <table>
+        <j:forEach var="parameterValue" items="${it.getProjectlist()}" varStatus="loop">
+          <tr>
+            <div name="${parameterValue}" id="${parameterValue}" >
+              <f:radioBlock name="projects" value="${parameterValue}" title="${parameterValue}" style="display:none" checked='checkedCheck("${parameterValue}")' />
+            </div>
+          </tr>
+        </j:forEach>
+      </table>
+    <br></br>
+    <br></br>
+  <br></br>
+        <table>
+
+       <tr>
+           <td>
+            <f:submit value="remove" name="formValue" id="formValue" />
+          </td>
+          <td>
+            <f:submit value="save" name="formValue" id="formValue" />
+          </td>
+        </tr>
+          </table>
+
+    </form>
+    
+  </l:main-panel>
+  </l:layout>
+</j:jelly>

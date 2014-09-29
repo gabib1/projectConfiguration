@@ -13,6 +13,7 @@
             <l:task icon="plugin/projectConfiguration/fail-icon.png" href="criteria" title="Fail build criteria"/>
             <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices"/>
             <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles"/>
+            <l:task icon="plugin/projectConfiguration/dependency-icon.png" href="testDependency" title="Tests dependency"/>
         </l:tasks>
     </l:side-panel>
     <l:main-panel>

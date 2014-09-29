@@ -26,7 +26,8 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author oreny
  */
-public class UtilsClass {
+public class UtilsClass
+{
 
     /**
      * Reads the given arguments from the request and write them to file
@@ -37,7 +38,8 @@ public class UtilsClass {
      * @throws IOException
      * @throws InvalidInputException
      */
-    static boolean CreateParamterFile(AbstractProject<?, ?> project, StaplerRequest req) throws IOException, InvalidInputException {
+    static boolean CreateParamterFile(AbstractProject<?, ?> project, StaplerRequest req) throws IOException, InvalidInputException
+    {
 
         Scheduled schedule = null;
         String filePath;
@@ -67,12 +69,14 @@ public class UtilsClass {
         dirFile = new File(dirPath);
 
         // if the folder were not created yet will create it
-        if (!dirFile.exists()) {
+        if (!dirFile.exists())
+        {
             dirFile.mkdir();
         }
 
         file = new File(filePath);
-        if (file.exists()) {
+        if (file.exists())
+        {
             System.err.println("File named: " + fileName + " already exist in : " + dirPath);
             return false;
         }
@@ -101,13 +105,15 @@ public class UtilsClass {
         //for testing purose
         System.out.println("______MKVER arguments are_______");
 
-        for (String key : mkverArguments.keySet()) {
+        for (String key : mkverArguments.keySet())
+        {
             System.out.println(key + "  :   " + mkverArguments.get(key));
         }
 
         System.out.println("________arguments______");
 
-        for (String key : arguments.keySet()) {
+        for (String key : arguments.keySet())
+        {
             System.out.println(key + "  :   " + arguments.get(key));
         }
 
@@ -118,13 +124,16 @@ public class UtilsClass {
 
         boolean isArgumentsWhereGiven = false;
         // mkver arguments should be as one line after mkver
-        for (String key : mkverArguments.keySet()) {
+        for (String key : mkverArguments.keySet())
+        {
             // only the values that given a value in the request were chosed
-            if (!(mkverArguments.get(key) == null)) {
+            if (!(mkverArguments.get(key) == null))
+            {
                 System.out.println(key);
                 givenMkverArguments.append(key);
                 givenMkverArguments.append(" ");
-                if (! key.equals("--noupdate")) {
+                if (!key.equals("--noupdate"))
+                {
                     isArgumentsWhereGiven = true;
                 }
             }
@@ -134,8 +143,10 @@ public class UtilsClass {
         //this argumnets shold be in a uniqe line, will start from counter
         //2 since we must have mkver and mkver argumnets before 
         int i = 2;
-        for (String key : arguments.keySet()) {
-            if (!(arguments.get(key) == null)) {
+        for (String key : arguments.keySet())
+        {
+            if (!(arguments.get(key) == null))
+            {
                 System.out.println(key);
                 writeToFile(writer, "parameters[" + i + "]=\"" + key + "\"");
                 i++;
@@ -146,7 +157,8 @@ public class UtilsClass {
 
         writer.close();
         // if we didn't got any argumnets , we should not save the file
-        if (!isArgumentsWhereGiven) {
+        if (!isArgumentsWhereGiven)
+        {
             file.delete();
         }
 
@@ -160,7 +172,8 @@ public class UtilsClass {
      * @param value
      * @throws IOException
      */
-    public static void writeToFile(Writer writer, String value) throws IOException {
+    public static void writeToFile(Writer writer, String value) throws IOException
+    {
         writer.write(value + "\n");
         writer.flush();
     }
@@ -171,7 +184,8 @@ public class UtilsClass {
      * @param line
      * @return
      */
-    public static String valuesInLine(String line) {
+    public static String valuesInLine(String line)
+    {
         String value = line.split("=")[1];
         value = value.replaceAll("\"", "");
         return value;
@@ -184,26 +198,32 @@ public class UtilsClass {
      * @param filePath
      * @return - array of all the values found in the file
      */
-    public static ArrayList<String> readValuessFromFile(String filePath) {
+    public static ArrayList<String> readValuessFromFile(String filePath)
+    {
         //changed   -- test
         ArrayList<String> parametersInFile = new ArrayList<>();
         File profilesFile = new File(filePath);
-        if (profilesFile.exists() == true) {
+        if (profilesFile.exists() == true)
+        {
             InputStream fis;
             BufferedReader br;
             String line;
 
-            try {
+            try
+            {
                 fis = new FileInputStream(profilesFile);
                 br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
                 //counter to find the second line
                 int i = 0;
-                while ((line = br.readLine()) != null) {
-                    if (line.isEmpty() && !(i == 1)) {
+                while ((line = br.readLine()) != null)
+                {
+                    if (line.isEmpty() && !(i == 1))
+                    {
                         parametersInFile.add(valuesInLine(line));
                         i++;
 
-                    } else {
+                    } else
+                    {
                         line = valuesInLine(line);
                         String[] arguments = line.split(" ");
                         parametersInFile.addAll(Arrays.asList(arguments));
@@ -211,7 +231,8 @@ public class UtilsClass {
                     }
                 }
                 br.close();
-            } catch (IOException ex) {
+            } catch (IOException ex)
+            {
             }
         }
         return parametersInFile;
@@ -224,7 +245,8 @@ public class UtilsClass {
      * @param filePath
      * @return
      */
-    public static ArrayList<String> getParametersFromFile(String filePath) {
+    public static ArrayList<String> getParametersFromFile(String filePath)
+    {
 
         // is true unless found --noupdate flag
         boolean updateView = true;
@@ -233,14 +255,17 @@ public class UtilsClass {
 
         // no file found
         // test -- changed
-        if (parametersInFile.isEmpty()) {
+        if (parametersInFile.isEmpty())
+        {
             return parametersInFile;
         }
         //for tetsing  printing all calues from the file
         System.out.println("Parameter read from file ");
-        for (String argument : parametersInFile) {
+        for (String argument : parametersInFile)
+        {
             System.out.println(argument);
-            if (argument.equals("--noupdate")) {
+            if (argument.equals("--noupdate"))
+            {
                 updateView = false;
             }
         }
@@ -261,13 +286,16 @@ public class UtilsClass {
         ArrayList<String> argumnetList = new ArrayList<>();
 
         // For each key will check with all the parameters from the file to see if we have a match
-        for (String key : arguments.keySet()) {
+        for (String key : arguments.keySet())
+        {
             System.out.println("The Parameter looking for is :   " + key);
 
             //Test Changed
-            for (String parameterFromFile : parametersInFile) {
+            for (String parameterFromFile : parametersInFile)
+            {
                 System.out.println("checking now with : " + parameterFromFile);
-                if (key.equals(parameterFromFile)) {
+                if (key.equals(parameterFromFile))
+                {
                     argumnetList.add(arguments.get(key));
                     System.out.println(key + " FOUND ON FILE ADDED WITH TRUE =  " + parameterFromFile);
                     break;
@@ -275,7 +303,8 @@ public class UtilsClass {
             }
         }
 
-        if (updateView) {
+        if (updateView)
+        {
             argumnetList.add("Update_view");
         }
 
@@ -288,15 +317,18 @@ public class UtilsClass {
      * @param schduleName
      * @return
      */
-    public static String getTimeOfSchduleFromItsName(String schduleName) {
+    public static String getTimeOfSchduleFromItsName(String schduleName)
+    {
         String[] list = schduleName.split(" ");
         String fileName = list[list.length - 1].replace(":", "");
         return fileName;
     }
 
-    public static boolean removeSchduleParametersFile(String path) {
+    public static boolean removeSchduleParametersFile(String path)
+    {
         File file = new File(path);
-        if (file.exists()) {
+        if (file.exists())
+        {
             return file.delete();
         }
         return true;
@@ -310,7 +342,8 @@ public class UtilsClass {
      *
      */
     // Changed
-    public static boolean fileExists(String path) {
+    public static boolean fileExists(String path)
+    {
         System.out.println("In UtilClass file Exist");
         File file = new File(path);
         boolean result;
@@ -318,4 +351,89 @@ public class UtilsClass {
         System.out.println("result value is " + result);
         return result;
     }
+
+    /**
+     *
+     * @param project
+     * @param value
+     * @throws java.io.IOException
+     */
+    public static void writeToTestDependencyFile(String projectName, String value) throws IOException
+    {
+        System.out.println("In writeToTestDependencyFile");
+        System.out.println("Given params , 1 - value:   " + value);
+        String userName, filePath;
+        FileWriter writer;
+        userName = System.getProperty("user.name");
+        filePath = "/home/" + userName + "/BuildSystem/cc-views/"
+                + userName + "_" + projectName
+                + "_int/vobs/linux/CI_Conf/testDependency";
+        File file = new File(filePath);
+        if (file.exists())
+        {
+            file.delete();
+        }
+        writer = new FileWriter(filePath);
+        writeToFile(writer, "projectNameForTestDependency=" + value);
+        writer.close();
+
+    }
+
+    /**
+     *reads the name of project that we saved in the dependency file
+     * 
+     * @param projectName - this project name
+     * @throws java.io.IOException
+     */
+    public static String readFromTestDependencyFile(String projectName) throws IOException
+    {
+        System.out.println("In readFromTestDependencyFile");
+        String userName, filePath;
+        userName = System.getProperty("user.name");
+        filePath = "/home/" + userName + "/BuildSystem/cc-views/"
+                + userName + "_" + projectName
+                + "_int/vobs/linux/CI_Conf/testDependency";
+
+        File file = new File(filePath);
+        String dependencyName = "empty";
+
+        if (file.exists() == true)
+        {
+            InputStream fis;
+            BufferedReader br;
+            String line;
+
+            fis = new FileInputStream(file);
+            br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+            line = br.readLine();
+            if (!line.isEmpty())
+            {
+                dependencyName = line.split("=")[1];
+            }
+            br.close();
+
+        }
+        System.out.println("dependencyName --- :  "  + dependencyName);
+        return dependencyName;
+    }
+
+    /**
+     * deletes the dependency file in the given project
+     * 
+     * @param projectName  - the name of the project in which we want to delete 
+     * the dependency file
+     */
+    static void removeDependencyFile(String projectName)
+    {
+        System.out.println("In removeDependencyFile");
+        String userName, filePath;
+        userName = System.getProperty("user.name");
+        filePath = "/home/" + userName + "/BuildSystem/cc-views/"
+                + userName + "_" + projectName
+                + "_int/vobs/linux/CI_Conf/testDependency";
+
+        File file = new File(filePath);
+        file.delete();
+    }
+
 }

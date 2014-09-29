@@ -77,9 +77,22 @@ public class DeviceManager
         return fieldsArr;
     }
 
-    public void addNewDevice(Map<String, String[]> map) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, JAXBException
+    public void addNewDevice(Map<String, String[]> map) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, JAXBException, IOException
     {
+        System.out.println("*******************************************");
+        System.out.println("        *************************");
+        System.out.println("              **********");
 
+        System.out.println("In addNewDevice");
+        System.out.println("this.deviceList.size()  :     " + this.deviceList.size());
+
+        deviceList.clear();
+        getDeviceArr();
+        System.out.println("");
+
+        System.out.println("this.deviceList.size()  :     " + this.deviceList.size());
+        System.out.println("");
+        System.out.println("");
         Unit u = new Unit();
         Marshaller marshaller = this.jaxbContext.createMarshaller();
         ObjectFactory objectFatory = new ObjectFactory();
@@ -137,28 +150,33 @@ public class DeviceManager
                 }
             }
         }
+
         u.setSlots(objectFatory.createUnitSlots());
         u.setWatchFiles(watchFiles);
         System.out.println("*******************************************************");
         System.out.println("");
         System.out.println("deviceIndex :        " + deviceIndex);
+        System.out.println("this.deviceList.size()  :     " + this.deviceList.size());
+
         System.out.println("");
         System.out.println("*******************************************************");
 
-        if (deviceIndex != -1)
+        if ((deviceIndex != -1) && (deviceIndex < this.deviceList.size()))
         {
+            System.out.println(" in if ");
             this.deviceList.set(deviceIndex, u);
         } else
         {
+            System.out.println(" in else ");
             deviceIndex = this.deviceList.size();
             this.deviceList.add(u);
         }
+
         String fileName = "/unit_" + deviceIndex + ".xml";
         marshaller.marshal(u, new File(unitsDirPath + "/unit_" + deviceIndex + ".xml"));
-
-        // System.out.println(map.get("test")[0]);
         checkifCopyOrDeleteNeeded(Arrays.toString(map.get("test")), devicesdToRunTestOnPath, fileName);
         checkifCopyOrDeleteNeeded(Arrays.toString(map.get("deploy")), devicesdToRunDeployOnPath, fileName);
+
     }
 
     /**
@@ -172,6 +190,7 @@ public class DeviceManager
      */
     public void checkifCopyOrDeleteNeeded(String value, String path, String filename)
     {
+        System.out.println("");
         System.out.println("in checkifCopyNeeded");
         System.out.println("value = " + value);
         System.out.println("path = " + path);
@@ -181,6 +200,8 @@ public class DeviceManager
 
         System.out.println("file To copy Path     " + fileTocopyPath);
         System.out.println("destination   " + destination);
+        System.out.println("");
+
         if (value.equals("[true]") || value.equals("true"))
         {
             System.out.println("In true");
@@ -220,7 +241,7 @@ public class DeviceManager
     public ArrayList<Unit> getDeviceArr() throws JAXBException, IOException
     {
         //since i were adding a new functiniallty will need to adjust the old 
-        //data base to the new one, this function will do so,
+        //data base to the new one, this function will do so, Oren
         try
         {
             validateTestAndDeployFolders();
@@ -229,6 +250,8 @@ public class DeviceManager
             System.err.println("Could not validate the test and deploy folders");
             Logger.getLogger(DeviceManager.class.getName()).log(Level.SEVERE, null, ex);
         }
+        // Oren Until here
+
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         unmarshaller.setEventHandler(new UnitValidationEventHandler());
         File unitsDir = new File(this.unitsDirPath);
@@ -471,7 +494,7 @@ public class DeviceManager
      * exist
      *
      * @throws IOException
-     * 
+     *
      * Author Oren
      */
     private void validateTestAndDeployFolders() throws IOException
@@ -488,7 +511,7 @@ public class DeviceManager
      * @param path - the folder to validate
      *
      * @throws IOException
-     * 
+     *
      * Author Oren
      */
     private void validateFolderExist(String path) throws IOException
@@ -498,11 +521,10 @@ public class DeviceManager
 
         // first will validate that the folders exist, other wise will create 
         //the folder and copied all the devices (first time we the new version)
-        System.out.println(path);
-        System.out.println("folder.exists()" + folder.exists());
-        System.out.println("folder.isDirectory()" + folder.isDirectory());
-        System.out.println("folder.exists() && !folder.isDirectory()" + (folder.exists() && !folder.isDirectory()));
-
+//        System.out.println(path);
+//        System.out.println("folder.exists()" + folder.exists());
+//        System.out.println("folder.isDirectory()" + folder.isDirectory());
+//        System.out.println("folder.exists() && !folder.isDirectory()" + (folder.exists() && !folder.isDirectory()));
         if (!(folder.exists() && folder.isDirectory()))
         {
             folder.delete();
@@ -583,7 +605,7 @@ public class DeviceManager
      */
     public boolean isDeviceOnDeployList(String fileName)
     {
-        System.out.println("In checkIfDeviceOnTestList file name =  " + fileName);
+//        System.out.println("In checkIfDeviceOnTestList file name =  " + fileName);
         boolean returnValue;
         String path;
         path = this.devicesdToRunDeployOnPath + "/" + fileName;
@@ -602,7 +624,7 @@ public class DeviceManager
      */
     public boolean isPathExist(String path)
     {
-        System.out.println("In checkIfDeviceInFolder ");
+        //      System.out.println("In checkIfDeviceInFolder ");
         File file = new File(path);
         Boolean fileExist = file.exists();
         System.out.println("");

@@ -4,12 +4,12 @@
  */
 package org.jenkinsci.plugins.projectConfiguration;
 
-import org.jenkinsci.plugins.projectConfiguration.devices.DeviceManager;
-import org.jenkinsci.plugins.projectConfiguration.exceptions.InvalidInputException;
 import antlr.ANTLRException;
+import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BooleanParameterDefinition;
+import hudson.model.View;
 import hudson.security.Permission;
 import hudson.triggers.TimerTrigger;
 import java.io.BufferedReader;
@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -31,7 +32,9 @@ import javax.servlet.ServletException;
 import javax.xml.bind.JAXBException;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.projectConfiguration.devices.DeviceManager;
 import org.jenkinsci.plugins.projectConfiguration.devices.Unit;
+import org.jenkinsci.plugins.projectConfiguration.exceptions.InvalidInputException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
@@ -50,6 +53,7 @@ public class ProjectConfiguration implements Action
     private String confFileDir;
 
     public static String ProfilesDBPath;
+    public final String PROJECTNAME;
     private final AbstractProject<?, ?> project;
     private MkverConf mkverConf;
     private CriteriaProperty criteriaProperty;
@@ -62,11 +66,13 @@ public class ProjectConfiguration implements Action
     public ProjectConfiguration()
     {
         project = null;
+        PROJECTNAME = null;
     }
 
     public ProjectConfiguration(AbstractProject<?, ?> project)
     {
         this.project = project;
+        PROJECTNAME = project.getName();
         String username = System.getProperty("user.name");
         confFileDir = "/home/" + username + "/BuildSystem/cc-views/" + username + "_" + project.getName() + "_int/vobs/linux/CI_Conf";
         // the _int is hard coded although it may be anything, but because we currently don't
@@ -534,14 +540,14 @@ public class ProjectConfiguration implements Action
             key = keySetIt.next();
             if (req.getParameterValues(key.toString()).length > 1)
             {
-                System.out.println("key: " + key.toString() + ", value: ");
+                // System.out.println("key: " + key.toString() + ", value: ");
                 for (String parameterValue : req.getParameterValues(key.toString()))
                 {
-                    System.out.println(parameterValue);
+                    //   System.out.println(parameterValue);
                 }
             } else
             {
-                System.out.println("key: " + key.toString() + ", value: " + req.getParameter(key.toString()));
+                //  System.out.println("key: " + key.toString() + ", value: " + req.getParameter(key.toString()));
             }
         }
         try
@@ -840,8 +846,8 @@ public class ProjectConfiguration implements Action
      *
      * @param name - the name of the schedule to pause
      *
-     * @throws InvalidInputException 
-     * 
+     * @throws InvalidInputException
+     *
      * Author Oren
      */
     private void unpauseEntryFromSpec(String name) throws InvalidInputException
@@ -921,7 +927,7 @@ public class ProjectConfiguration implements Action
         TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
         boolean isSchdulerPaused = false;
         String[] specArray;
-        
+
         if (timerTrigger != null)
         {
             specArray = timerTrigger.getSpec().split("\n");
@@ -1309,11 +1315,11 @@ public class ProjectConfiguration implements Action
     }
 
     /**
-     * called from the java script when an event(click) on check box in 
-     * the device page
-     * 
+     * called from the java script when an event(click) on check box in the
+     * device page
+     *
      * @param checkBoxName
-     * @param CheckBoxValue 
+     * @param CheckBoxValue
      */
     @JavaScriptMethod
     public void doOnClickCheckBoxDeviceManager(String checkBoxName, String CheckBoxValue)
@@ -1330,4 +1336,85 @@ public class ProjectConfiguration implements Action
 
     }
 
+    /**
+     * return all the projects in Jenkins
+     *
+     * @return - list of all the projects
+     */
+    public Collection<String> getProjectlist()
+    {
+        Collection<String> projectNames = Jenkins.getInstance().getJobNames();
+        projectNames.remove(this.PROJECTNAME);
+        projectNames.remove(getNameDepenedency());
+        return projectNames;
+    }
+
+    /**
+     *
+     * calls by the client side, can be called with 2 option s
+     *
+     * remove - will remove the current dependency save - will change / add the
+     * current dependency the the chosen one
+     *
+     * @param req
+     * @param rsp
+     * @throws IOException
+     */
+    public void doChoseDepenedencyOption(StaplerRequest req, StaplerResponse rsp) throws IOException
+    {
+        System.out.println("^^^^^^^^^^^^^");
+        System.out.println("in doChoseDepenedencyOption");
+
+        String formOption = req.getParameter("formValue");
+
+        System.out.println("formOption :  " + formOption);
+        if (formOption != null)
+        {
+            switch (formOption)
+            {
+                case "save":
+                    String chosenProjectName = req.getParameter("projects");
+                    System.out.println("chosenProjectName :  " + chosenProjectName);
+                    if (chosenProjectName != null)
+                    {
+                        UtilsClass.writeToTestDependencyFile(this.project.getName(), chosenProjectName);
+
+                    }
+                    break;
+                    
+                case "remove":
+                    UtilsClass.removeDependencyFile(PROJECTNAME);
+                    break;
+            }
+        }
+
+        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/testDependency");
+    }
+
+    /**
+     *
+     * return the name saved in the dependency file, or "empty" if the file does
+     * not exist
+     *
+     */
+    @JavaScriptMethod
+    public String getNameDepenedency()
+    {
+        String dependencyName = null;
+        System.out.println("^^^^^^^^^^^^^");
+        System.out.println("in doGetNameDepenedency");
+        try
+        {
+
+            dependencyName = UtilsClass.readFromTestDependencyFile(this.project.getName());
+        } catch (IOException ex)
+        {
+            System.out.println("*********************************************");
+            System.err.println("getNameDepenedency -- Could not read the dependency");
+            System.out.println("*********************************************");
+
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return dependencyName;
+    }
 }

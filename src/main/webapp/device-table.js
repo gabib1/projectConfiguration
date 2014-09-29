@@ -87,7 +87,7 @@ function onClickCheckBox(checkBoxName) {
 		var checkBoxValue = document.getElementById(checkBoxName).checked
 		console.log(checkBoxValue);
         it.doOnClickCheckBoxDeviceManager(checkBoxName,checkBoxValue);
-		location.reload();
+	//	location.reload();
     }else{
 		location.reload();
 	}
