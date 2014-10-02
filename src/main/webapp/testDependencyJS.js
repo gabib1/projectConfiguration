@@ -1,5 +1,5 @@
 
-	// validte that the option that was chosen is not empty 
+// validte that the option that was chosen is not empty 
 function validateForm() {
     var formValue = $(document.activeElement).val()
     console.log("form Value  : " + formValue);
@@ -22,20 +22,7 @@ function validateForm() {
         });
     }
 }
-
-function checkedCheck(projectName) {
-    console.log("projectName:  " + projectName);
-    it.doGetNameDepenedency( function(k) {
-        var returnedValue = k.responseObject();
-        console.log("returnedValue  : " + returnedValue);
-        if (projectName == returnedValue) {
-            return true;
-        } else {
-            return false;
-        }
-    });
-}
-			
+	
 
 
 

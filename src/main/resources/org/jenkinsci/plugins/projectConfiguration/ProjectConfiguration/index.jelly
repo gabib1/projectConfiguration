@@ -1,6 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
 <l:layout title="Configuration" secured="true">
+<script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/MkverConfJS.js" />
+<script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/jquery-1.11.0.min.js" />
+
 <l:header/>
     <l:side-panel>
         <l:tasks>
@@ -18,7 +21,7 @@
     </l:side-panel>
     <l:main-panel>
         <H1>${it.getJobName()} Configuration</H1>
-        <form action="submitConfFile" method="post">
+        <form action="submitConfFile" method="post" onclick="formAlerts()">
             <table>
                 <tr>
                     <tr>
@@ -99,27 +102,21 @@
                             <f:textbox name="imagePath" value="${it.getImagePath()}"/>
                         </f:entry>
                     </tr>
-
-                    <tr>
-                        <f:entry title="">
-                            <div style="text-decoration: underline">Klocwork:</div>
-                        </f:entry>
-                    </tr>
-                    <tr>
-                        <f:entry title="KW project name:">
-                            <f:textbox name="kwProjectName" value="${it.getKWProjectName()}"/>
-                        </f:entry>
-                    </tr>
-                    <tr>
-                        <f:entry title="KW directory:">
-                            <f:textbox name="kwDirPath" value="${it.getKWDirPath()}"/>
-                        </f:entry>
-                    </tr>
                 </tr>
+            </table>
+            <table>
+
                 <tr>
-                    <f:entry title="" >
-                        <f:submit value="Save"/>
-                    </f:entry>
+                    <td>
+                    </td>
+
+                    <td>
+
+                        <f:submit value="update view"  name="formValue" id="formValue" />
+                    </td>
+                    <td>
+                        <f:submit value="save"  name="formValue" id="formValue"/>
+                    </td>
                 </tr>
             </table>
         </form>

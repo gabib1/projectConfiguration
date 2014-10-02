@@ -343,19 +343,37 @@ public class ProjectConfiguration implements Action
     // Set a new Corntab entry using TimerTrigger class
     public void doSubmitConfFile(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException
     {
-        mkverConf.checkIfFileIsUptodateAndUpdate(req.getParameter("projectName"),
-                req.getParameter("streamName"), req.getParameter("mailingList"),
-                req.getParameter("mailingListTesting"), req.getParameter("logsPath"),
-                req.getParameter("rpmPath"), req.getParameter("imagePath"),
-                req.getParameter("ccActivity"), req.getParameter("kwProjectName"),
-                req.getParameter("kwDirPath"), req.getParameter("idcVersionFilePath"),
-                req.getParameter("productName"), req.getParameter("buildDirPath"));
+        System.out.println("IN doSubmitConfFile");
+        String formOption = req.getParameter("formValue");
+        System.out.println("formOption:   " + formOption);
 
-        //Find a better way to redirect the response so it won't be hard coded.
+        switch (formOption)
+        {
+            case "update view":
+                System.out.println("UPDATE VIEW");
+                mkverConf.updateView();
+                System.out.println("UPDATE VIEW ENDED");
+                break;
+
+            case "save":
+                System.out.println("SAVING CONFFILE");
+                mkverConf.checkIfFileIsUptodateAndUpdate(req.getParameter("projectName"),
+                        req.getParameter("streamName"), req.getParameter("mailingList"),
+                        req.getParameter("mailingListTesting"), req.getParameter("logsPath"),
+                        req.getParameter("rpmPath"), req.getParameter("imagePath"),
+                        req.getParameter("ccActivity"), req.getParameter("kwProjectName"),
+                        req.getParameter("kwDirPath"), req.getParameter("idcVersionFilePath"),
+                        req.getParameter("productName"), req.getParameter("buildDirPath"));
+
+                System.out.println("SAVING CONFFILE ENDED");
+
+            //Find a better way to redirect the response so it won't be hard coded.
+            }
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
+
+        // Set a new defualts param base on the request from the server
     }
 
-    // Set a new defualts param base on the request from the server
     public void doSubmitParam(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException
     {
         DefaultParameter defaultParameter = new DefaultParameter(this.project);
@@ -381,13 +399,14 @@ public class ProjectConfiguration implements Action
             String isParametrized = req.getParameter("parameters");
             System.out.println("isParametrized : " + isParametrized);
 
+            Scheduled schedule = generateScheduleClassFromRequest(req);
+            addEntryToSpec(schedule.getSpec());
+            // validate that the scheduler time is uniqe
+
             if (isParametrized.equals("true"))
             {
                 UtilsClass.CreateParamterFile(this.project, req);
             }
-
-            Scheduled schedule = generateScheduleClassFromRequest(req);
-            addEntryToSpec(schedule.getSpec());
         } catch (InvalidInputException ex)
         {
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
@@ -411,6 +430,19 @@ public class ProjectConfiguration implements Action
         //the cron spec, we will extract the schedule description 
         // (which is the content that appears until the ":") and search for
         // objects with the same description.
+
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("----------------doRemoveSchedule---------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
 
         String formOption = req.getParameter("formValue");
         String userChoice = req.getParameter("schedule");
@@ -436,15 +468,17 @@ public class ProjectConfiguration implements Action
                     String action = req.getParameter("active");
                     System.out.println("Action value is : " + action);
 
-                    //will check that is realy paused before were making it active
                     if (!action.isEmpty())
                     {
+                        //will check that is realy paused before were making it active
                         if (action.equals("activate") && isSchdulePaused(scheduleName))
                         {
-                            unpauseEntryFromSpec(scheduleName);
+                            System.out.println(" activate!!!!!!!!!!!!!!!!");
+                            changeScheduleStatus(scheduleName, "activate");
                         } else if (action.equals("stop") && !isSchdulePaused(scheduleName))
                         {
-                            pauseEntryFromSpec(scheduleName);
+                            System.out.println("stop!!!!!!!!!!!!!");
+                            changeScheduleStatus(scheduleName, "stop");
                         }
                     }
             }
@@ -453,9 +487,14 @@ public class ProjectConfiguration implements Action
         {
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
+        System.out.println("-------------------------------------------------");
         //Find a better way to redirect the response so it won't be hard coded.
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/edit_schedule");
+
     }
 
     /**
@@ -793,104 +832,64 @@ public class ProjectConfiguration implements Action
 
     //Oren
     /**
-     * Gets the name of the schedule to pause and pause it by rebuild the crone
-     * part of the scheduler with adding # in the start of the schedule line
+     * Gets the name of the schedule to pause  or activate and  do so
+     * by rebuilding of the crone lists
+     *with add or remove of # infront of the needed line
      *
      * @param name - the name of the schedule to pause
      *
      * @throws InvalidInputException author Oren
      */
-    private void pauseEntryFromSpec(String name) throws InvalidInputException
+    private void changeScheduleStatus(String name, String newStatus) throws InvalidInputException
     {
 
-        System.out.println("In ---- pauseEntryFromSpec");
+        System.out.println("In ---- changeScheduleStatus");
+        System.out.println("name = " + name + ",     newstatus = " + newStatus);
+
         StringBuilder spec = new StringBuilder();
         String[] specArr;
         TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
 
         if (timerTrigger != null)
         {
+
             specArr = timerTrigger.getSpec().split("\n");
             for (int i = 0; i < specArr.length; i += 2)
             {
                 // we extract the specArray back to spec except the description and the following
                 // cron entry which coresponds with the input name,
                 //which will make the sechedule also as a comment by adding "#"
-                //adds the name
                 spec.append(specArr[i]);
                 spec.append("\n");
+                String cronToAdd = specArr[i + 1];
                 if (specArr[i].startsWith("#" + name))
                 {
-                    //will make sure not to add # twice
-                    if (!specArr[i + 1].startsWith("#"))
+                    switch (newStatus)
                     {
-                        spec.append("#");
+
+                        case "stop":
+                            //will make sure not to add # twice
+                            if (!cronToAdd.startsWith("#"))
+                            {
+                                cronToAdd = "#" + cronToAdd;
+                            }
+                            break;
+
+                        case "activate":
+                            // activate only paused schedules
+                            if (cronToAdd.startsWith("#"))
+                            {
+                                cronToAdd = cronToAdd.substring(1);
+                            }
+                            break;
                     }
                 }
 
-                spec.append(specArr[i + 1]);
+                spec.append(cronToAdd);
                 spec.append("\n");
             }
-        } else
-        {
-            throw new InvalidInputException("timerTrigger is empty can't remove " + name);
+            updateSpec(timerTrigger, spec.toString());
         }
-
-        updateSpec(timerTrigger, spec.toString());
-    }
-
-    /**
-     * Gets the name of the schedule to cancel the pause and do so by rebuild
-     * the crone part of the scheduler with removing the " # " in the start of
-     * the schedule line
-     *
-     * @param name - the name of the schedule to pause
-     *
-     * @throws InvalidInputException
-     *
-     * Author Oren
-     */
-    private void unpauseEntryFromSpec(String name) throws InvalidInputException
-    {
-
-        System.out.println("In ---- UNNNNpauseEntryFromSpec");
-        StringBuilder spec = new StringBuilder();
-        String[] specArr;
-        TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
-
-        if (timerTrigger != null)
-        {
-            specArr = timerTrigger.getSpec().split("\n");
-            for (int i = 0; i < specArr.length; i += 2)
-            {
-                // we extract the specArray back to spec except the description and the following
-                // cron entry which coresponds with the input name,
-                // will remove the pause by removing the "#" from the the line 
-                // start
-                spec.append(specArr[i]);
-                spec.append("\n");
-                if (specArr[i].startsWith("#" + name))
-                {
-                    if (specArr[i + 1].startsWith("#"))
-                    {
-                        spec.append(specArr[i + 1].substring(1));
-                    } else
-                    {
-                        spec.append(specArr[i + 1]);
-                    }
-                } else
-                {
-                    spec.append(specArr[i + 1]);
-                }
-
-                spec.append("\n");
-            }
-        } else
-        {
-            throw new InvalidInputException("timerTrigger is empty can't remove " + name);
-        }
-
-        updateSpec(timerTrigger, spec.toString());
     }
 
     /**
@@ -909,7 +908,6 @@ public class ProjectConfiguration implements Action
         int indexOfColon = userChoice.indexOf(':');
         String name = userChoice.substring(0, indexOfColon);
         return isSchdulePaused(name);
-
     }
 
     /**
@@ -922,7 +920,6 @@ public class ProjectConfiguration implements Action
      */
     public boolean isSchdulePaused(String name)
     {
-
         System.out.println("In isSchdulePaused  ");
         TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
         boolean isSchdulerPaused = false;
@@ -1381,7 +1378,7 @@ public class ProjectConfiguration implements Action
 
                     }
                     break;
-                    
+
                 case "remove":
                     UtilsClass.removeDependencyFile(PROJECTNAME);
                     break;
