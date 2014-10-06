@@ -30,7 +30,7 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?, ?>> {
     private KWSeverityEnum kwSeverity;
     private boolean kwFailBuildOnCriteria;
     private boolean testsFailBuildOnCriteria;
-    private boolean deploymentFailBuildOnCriteria;
+    private boolean deployFailBuildOnCriteria;
     private File f_failCriteria;
 
     public CriteriaProperty() {
@@ -67,11 +67,11 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?, ?>> {
 
     //Oren
     public void setDeploymentCriteria(boolean isEnabled) {
-        this.deploymentFailBuildOnCriteria = isEnabled;
+        this.deployFailBuildOnCriteria = isEnabled;
     }
 
     public boolean getDeploymentCriteria() {
-        return this.deploymentFailBuildOnCriteria;
+        return this.deployFailBuildOnCriteria;
     }
 
     public void saveToFile(String failCriteriaFilePath) {
@@ -86,7 +86,7 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?, ?>> {
             newFileContent.add("KWSeverityCode=" + this.kwSeverity.getSeverityCode());
             newFileContent.add("KWFailBuildOnCriteria=" + (this.kwFailBuildOnCriteria ? "1" : "0"));
             newFileContent.add("TestsFailBuildOnCriteria=" + (this.testsFailBuildOnCriteria ? "1" : "0"));
-            newFileContent.add("DeploymentFailBuildOnCriteria=" + (this.deploymentFailBuildOnCriteria ? "1" : "0"));
+            newFileContent.add("DeployFailBuildOnCriteria=" + (this.deployFailBuildOnCriteria ? "1" : "0"));
 
             try (PrintWriter pw = new PrintWriter(this.f_failCriteria)) {
                 for (String currLine : newFileContent) {
@@ -126,13 +126,13 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?, ?>> {
                         }
                     }
                     // Oren
-                    if (line.startsWith("DeploymentFailBuildOnCriteria=") == true) {
+                    if (line.startsWith("DeploytFailBuildOnCriteria=") == true) {
                         int indexOfEquels = line.indexOf('=') + 1;
                         String value = line.substring(indexOfEquels);
                         if (value.equals("1") == true) {
-                            this.deploymentFailBuildOnCriteria = true;
+                            this.deployFailBuildOnCriteria = true;
                         } else {
-                            this.deploymentFailBuildOnCriteria = false;
+                            this.deployFailBuildOnCriteria = false;
                         }
                     }
                     if (line.startsWith("TestsFailBuildOnCriteria=") == true) {
@@ -152,7 +152,7 @@ public class CriteriaProperty extends JobProperty<AbstractProject<?, ?>> {
             kwSeverity = KWSeverityEnum.ERROR;
             kwFailBuildOnCriteria = false;
             testsFailBuildOnCriteria = false;
-            deploymentFailBuildOnCriteria = false;
+            deployFailBuildOnCriteria = false;
         }
     }
 

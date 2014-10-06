@@ -395,7 +395,7 @@ public class UtilsClass
                 + "_int/vobs/linux/CI_Conf/testDependency";
 
         File file = new File(filePath);
-        String dependencyName = "empty";
+        String dependencyName = "Empty";
 
         if (file.exists() == true)
         {
