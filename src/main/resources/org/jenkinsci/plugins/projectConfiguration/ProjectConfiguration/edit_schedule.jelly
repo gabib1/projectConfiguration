@@ -5,7 +5,7 @@
     <j:set var="descriptor" value="${it.descriptor}" />
     <st:bind var="it" value="${it}" />
     <st:bind var="descriptor" value="${it.descriptor}" />
-    <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/RemoveScheduleJS.js" />
+    <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/EditScheduleJS.js" />
     <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/jquery-1.11.0.min.js" />
  
     <l:header />
@@ -23,7 +23,7 @@
         margin:10px auto;
       }
       .primary {
-        background-color:#fb7600;
+        background-color:#FFFFFF;
       }
       
     </style>
@@ -40,6 +40,7 @@
         <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices" />
         <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles" />
         <l:task icon="plugin/projectConfiguration/dependency-icon.png" href="testDependency" title="Tests dependency"/>
+        <l:task icon="plugin/projectConfiguration/release_notesIcon.png" href="release_notes" title="Release notes"/>
 
       </l:tasks>
     </l:side-panel>

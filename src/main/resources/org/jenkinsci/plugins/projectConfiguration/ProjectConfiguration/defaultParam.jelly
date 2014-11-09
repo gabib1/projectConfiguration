@@ -14,6 +14,8 @@
             <l:task icon="plugin/projectConfiguration/device-icon.png" href="devices" title="Devices"/>
             <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles"/>
             <l:task icon="plugin/projectConfiguration/dependency-icon.png" href="testDependency" title="Tests dependency"/>
+           <l:task icon="plugin/projectConfiguration/release_notesIcon.png" href="release_notes" title="Release notes"/>
+
         </l:tasks>
     </l:side-panel>
     <l:main-panel>

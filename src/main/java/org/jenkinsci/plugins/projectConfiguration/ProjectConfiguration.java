@@ -5,11 +5,9 @@
 package org.jenkinsci.plugins.projectConfiguration;
 
 import antlr.ANTLRException;
-import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BooleanParameterDefinition;
-import hudson.model.View;
 import hudson.security.Permission;
 import hudson.triggers.TimerTrigger;
 import java.io.BufferedReader;
@@ -22,6 +20,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -52,7 +52,9 @@ public class ProjectConfiguration implements Action
 
     private String confFileDir;
 
-    public static String ProfilesDBPath;
+    public static String ATTProfilesDBPath;
+    public static String othersProfilesDBPath;
+
     public final String PROJECTNAME;
     private final AbstractProject<?, ?> project;
     private MkverConf mkverConf;
@@ -62,6 +64,7 @@ public class ProjectConfiguration implements Action
     private int chosenSlotID = 1;       // This slot ID is to remember the user's choice in the slots page
     private String username = System.getProperty("user.name");
     private String parameterFileDirPath;
+    private String pendingReleaseNotesMarksPath;
 
     public ProjectConfiguration()
     {
@@ -83,6 +86,7 @@ public class ProjectConfiguration implements Action
         parameterFileDirPath = "/home/" + username + "/BuildSystem/cc-views/"
                 + username + "_" + project.getName()
                 + "_int/vobs/linux/CI_Conf/schduledRunsParameters/";
+        pendingReleaseNotesMarksPath = confFileDir + "/pendingReleaseNotesMarks.txt";
         try
         {
             deviceManager = new DeviceManager(confFileDir + "/Devices");
@@ -91,7 +95,9 @@ public class ProjectConfiguration implements Action
             System.out.println("Failed to init Device Manager, validate XMLs are written correctly");
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }
-        ProjectConfiguration.ProfilesDBPath = "/home/" + username + "/profilesDB";
+        ATTProfilesDBPath = "/home/" + username + "/profilesDB/profiles";
+        othersProfilesDBPath = "/home/" + username + "/profilesDB/otherProfiles";
+
     }
 
     public String getJobName()
@@ -148,12 +154,73 @@ public class ProjectConfiguration implements Action
     public ArrayList<String> getAvailableProfiles()
     {
         ArrayList<String> profiles = new ArrayList<String>();
-        File profileDBDir = new File(ProjectConfiguration.ProfilesDBPath);
+        File profileDBDir = new File(ATTProfilesDBPath);
         if (profileDBDir.isDirectory() == true)
         {
             File[] profileFiles = profileDBDir.listFiles(new ProfilesFileFilter());
             for (File file : profileFiles)
             {
+                profiles.add(file.getName().replaceAll(".profile", ""));
+            }
+        } else
+        {
+            System.out.println("[ERROR] Profiles DB doesn't exist under " + profileDBDir.getAbsolutePath());
+        }
+
+        return profiles;
+    }
+
+    /**
+     * Return the right DB
+     *
+     * @param testType - can be "ATT test suit" or "Other tests"
+     * @return - the path for the DB to use
+     */
+    private String getRightPath(String testType)
+    {
+        System.out.println("In getRightPath");
+        String path = null;
+        switch (testType)
+        {
+            case "ATT test suit":
+                System.out.println("in case ATT");
+                path = ATTProfilesDBPath;
+                break;
+            case "Other tests":
+                System.out.println("in case OTHER");
+
+                path = othersProfilesDBPath;
+                break;
+            default:
+                System.out.println("in case default");
+                System.err.println("testType = " + testType + " Is not a valid test type");
+        }
+        return path;
+    }
+
+    //Oren
+    @JavaScriptMethod
+    public ArrayList<String> doGetAvailableProfiles(String testType)
+    {
+        System.out.println("--------------------------------------------");
+        System.out.println("doGetAvailableProfiles");
+        System.out.println("\n testType = " + testType);
+        ArrayList<String> profiles = new ArrayList<String>();
+
+        String path = getRightPath(testType);
+        File profileDBDir = null;
+        if (path != null)
+        {
+            profileDBDir = new File(path);
+        }
+
+        if (profileDBDir.isDirectory())
+        {
+            System.out.println("IN iF");
+            File[] profileFiles = profileDBDir.listFiles(new ProfilesFileFilter());
+            for (File file : profileFiles)
+            {
+                System.out.println("file name :" + file.getName());
                 profiles.add(file.getName().replaceAll(".profile", ""));
             }
         } else
@@ -253,7 +320,7 @@ public class ProjectConfiguration implements Action
     public ArrayList<String> getParametersForSchudle()
     {
         ArrayList<String> profiles = new ArrayList<String>();
-        File profileDBDir = new File(ProjectConfiguration.ProfilesDBPath);
+        File profileDBDir = new File(this.ATTProfilesDBPath);
         if (profileDBDir.isDirectory() == true)
         {
             File[] profileFiles = profileDBDir.listFiles(new ProfilesFileFilter());
@@ -413,7 +480,7 @@ public class ProjectConfiguration implements Action
         }
 
         //Find a better way to redirect the response so it won't be hard coded.
-        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration");
+        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/add_schedule");
     }
 
     /**
@@ -432,16 +499,7 @@ public class ProjectConfiguration implements Action
         // objects with the same description.
 
         System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
         System.out.println("----------------doRemoveSchedule---------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
         System.out.println("-------------------------------------------------");
 
         String formOption = req.getParameter("formValue");
@@ -488,10 +546,7 @@ public class ProjectConfiguration implements Action
             Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
-        System.out.println("-------------------------------------------------");
+
         //Find a better way to redirect the response so it won't be hard coded.
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/edit_schedule");
 
@@ -728,7 +783,10 @@ public class ProjectConfiguration implements Action
     {
         System.out.println("In doTestsProfile");
         String[] profiles = req.getParameterValues("chosen-profiles-list");
-        File profilesFile = new File(this.confFileDir + "/tests_profiles.txt");
+        String testType = req.getParameter("type");
+        System.out.println("testType ----------  " + testType);
+        File profilesFile = new File(this.confFileDir + getProfileEnding(testType));
+        String profilePath = getRightPath(testType);
         PrintWriter pw = new PrintWriter(profilesFile);
 
         if (profiles != null)
@@ -736,7 +794,7 @@ public class ProjectConfiguration implements Action
             for (String profile : profiles)
             {
                 System.out.println("profile: " + profile);
-                if (new File(ProjectConfiguration.ProfilesDBPath + "/" + profile + ".profile").exists() == true)
+                if (new File(profilePath + "/" + profile + ".profile").exists() == true)
                 {
                     pw.println(profile + ".profile");
                 }
@@ -778,6 +836,69 @@ public class ProjectConfiguration implements Action
     }
 
     /**
+     * Oren
+     *
+     * @param testType
+     * @return
+     */
+    private String getProfileEnding(String testType)
+    {
+
+        String ending = null;
+        switch (testType)
+        {
+            case "ATT test suit":
+                System.out.println("in case ATT");
+                ending = "/tests_profiles.txt";
+
+                break;
+
+            case "Other tests":
+                System.out.println("in case OTHER");
+                ending = "/tests_other_profiles.txt";
+                break;
+
+            default:
+                System.out.println("in case default");
+                System.err.println("testType = " + testType + " Is not a valid test type");
+        }
+        return ending;
+    }
+
+    //Oren
+    @JavaScriptMethod
+    public ArrayList<String> doGetChosenProfiles(String testType)
+    {
+        System.out.println("In doGetChosenProfiles");
+        ArrayList<String> profiles = new ArrayList<String>();
+
+        File profilesFile = new File(this.confFileDir + getProfileEnding(testType));
+
+        if (profilesFile.exists() == true)
+        {
+            InputStream fis;
+            BufferedReader br;
+            String line;
+
+            try
+            {
+                fis = new FileInputStream(profilesFile);
+                br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+                while ((line = br.readLine()) != null)
+                {
+                    profiles.add(line.replace(".profile", ""));
+                }
+                br.close();
+            } catch (IOException ex)
+            {
+                Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        return profiles;
+    }
+
+    /**
      *
      * @param newEntry should be in the following format: #Name\n* * * * * "*"
      * might be replaced by the desired value
@@ -793,7 +914,6 @@ public class ProjectConfiguration implements Action
             prevSpec = timerTrigger.getSpec();
             //Oren FIX
             newSpec = prevSpec.trim() + "\n" + newEntry.trim();
-            System.out.println("The new spec is : \n " + newSpec);
         } else
         {
             System.out.println("No previous TimerTrigger");
@@ -832,9 +952,9 @@ public class ProjectConfiguration implements Action
 
     //Oren
     /**
-     * Gets the name of the schedule to pause  or activate and  do so
-     * by rebuilding of the crone lists
-     *with add or remove of # infront of the needed line
+     * Gets the name of the schedule to pause or activate and do so by
+     * rebuilding of the crone lists with add or remove of # infront of the
+     * needed line
      *
      * @param name - the name of the schedule to pause
      *
@@ -1080,7 +1200,6 @@ public class ProjectConfiguration implements Action
                 {
                     //will elimanate the first #, and then split
                     currnetSchdule = currnetSchdule.substring(1);
-                    System.out.println("Start with #");
                 }
 
                 cronEntry = currnetSchdule.split(" ");
@@ -1247,10 +1366,7 @@ public class ProjectConfiguration implements Action
     }
 
     /**
-     * Oren returns the default parameters of this project
-     *
-     *
-     *
+     * returns the default parameters of this project
      * @return List<BooleanParameterDefinition>-defaultParameter
      */
     public List<BooleanParameterDefinition> getParameters()
@@ -1359,11 +1475,8 @@ public class ProjectConfiguration implements Action
      */
     public void doChoseDepenedencyOption(StaplerRequest req, StaplerResponse rsp) throws IOException
     {
-        System.out.println("^^^^^^^^^^^^^");
         System.out.println("in doChoseDepenedencyOption");
-
         String formOption = req.getParameter("formValue");
-
         System.out.println("formOption :  " + formOption);
         if (formOption != null)
         {
@@ -1398,7 +1511,6 @@ public class ProjectConfiguration implements Action
     public String getNameDepenedency()
     {
         String dependencyName = null;
-        System.out.println("^^^^^^^^^^^^^");
         System.out.println("in doGetNameDepenedency");
         try
         {
@@ -1414,4 +1526,109 @@ public class ProjectConfiguration implements Action
         }
         return dependencyName;
     }
+
+    /**
+     * Checks if the there already scheduler with this time
+     *
+     * Return true if the time is not unique ,false otherwise
+     *
+     * Oren
+     */
+    @JavaScriptMethod
+    public boolean doSchedulerTimeDuplicate(String newTime)
+    {
+        System.out.println("in doSchedulerTimeUnique");
+        String prevSpec, newSpec;
+        String schedulerTime = null;
+        TimerTrigger timerTrigger = project.getTrigger(TimerTrigger.class);
+        String[] specArr;
+        if (timerTrigger != null)
+        {
+            specArr = timerTrigger.getSpec().split("\n");
+            for (int i = 1; i < specArr.length; i += 2)
+            {
+                System.out.println(i + " " + specArr[i]);
+                String[] timeParts = specArr[i].split(" ");
+                if (timeParts.length >= 1)
+                {
+                    schedulerTime = timeParts[1] + timeParts[0];
+                }
+
+                if (schedulerTime.equals(newTime))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+/**
+ * called from the client side , creates a file in ci conf dir , 
+ * if the file already exist it will be deleted.
+ * in the form of key=value with solved_limitations and new_limitations
+ * 
+ * @param req
+ * @param rsp
+ * @throws IOException 
+ */
+public void doSubmitReleaseNotes(StaplerRequest req, StaplerResponse rsp) throws IOException 
+    {
+        
+        System.out.println("IN doSubmitReleaseNotes");
+        File file = new File(pendingReleaseNotesMarksPath);
+        file.delete();
+        PrintWriter pw = new PrintWriter(file);
+        String solved_limitations = "solved_limitations=\"" + req.getParameter("solved_limitations") + "\"";
+        String new_limitations = "new_limitations=\"" + req.getParameter("new_limitations") + "\"";
+        pw.println(solved_limitations);
+        pw.println(new_limitations);
+        pw.flush();
+        pw.close();
+
+        rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/release_notes");
+    }
+
+    /**
+     *return the text written in pendingReleaseNotesMarks file for the given
+     * option
+     *
+     * @param option - can be (solved_limitations or new_limitations)
+     * @return
+     */
+    @JavaScriptMethod
+    public String doGetReleaseNotesText(String option)
+    {
+        System.out.println("in doGetReleaseNotesText, ---- option : " + option);
+        String result = null;
+        String[] textParts = null;
+        File file = new File(pendingReleaseNotesMarksPath);
+        if (file.exists())
+        {
+            try
+            {
+                // reds the full file to one string
+                String fileText = new String(Files.readAllBytes(Paths.get(pendingReleaseNotesMarksPath)));
+                textParts = fileText.split("\"");
+            } catch (IOException ex)
+            {
+                System.err.println("Could not read from pendingReleaseNotesMarks File");
+            }
+
+            // chose the right text to return
+            switch (option)
+            {
+                case "solved_limitations":
+                    result = textParts[1];
+                    break;
+                case "new_limitations":
+                    result = textParts[3];
+                    break;
+            }
+        }
+        
+        return result;
+
+    }
+
 }

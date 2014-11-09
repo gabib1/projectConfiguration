@@ -27,7 +27,8 @@ function setTestsCheckboxs() {
                     $(t.responseObject()).each(function(index) {
                         console.log(index + ": " + this);
                         $("[name=" + this).prop("checked", true);
-
+                        // remove the onclick attrubute from the checkboxes
+                   //     $("[type=checkbox").attr('onclick', '').unbind('click');
                     });
                 });
             } else {
@@ -37,7 +38,8 @@ function setTestsCheckboxs() {
                     $(t.responseObject()).each(function(index) {
                         console.log(index + ": " + this);
                         $("[name=" + this).prop("checked", true);
-
+                        // add the attr onclock='return false'
+                      //  $("[type=checkbox").attr('onclick', 'return false')
                     });
                 });
             }
@@ -78,6 +80,7 @@ function validateForm() {
 
 
 function test() {
+    
     var scheduleName = $('#schedule').find(":selected").text();
     if (scheduleName !== null && scheduleName !== "") {
         //goes to doFileExist in the server side, and the returned value will be the element k

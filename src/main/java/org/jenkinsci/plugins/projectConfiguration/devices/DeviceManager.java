@@ -79,10 +79,6 @@ public class DeviceManager
 
     public void addNewDevice(Map<String, String[]> map) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, JAXBException, IOException
     {
-        System.out.println("*******************************************");
-        System.out.println("        *************************");
-        System.out.println("              **********");
-
         System.out.println("In addNewDevice");
         System.out.println("this.deviceList.size()  :     " + this.deviceList.size());
 
@@ -153,13 +149,6 @@ public class DeviceManager
 
         u.setSlots(objectFatory.createUnitSlots());
         u.setWatchFiles(watchFiles);
-        System.out.println("*******************************************************");
-        System.out.println("");
-        System.out.println("deviceIndex :        " + deviceIndex);
-        System.out.println("this.deviceList.size()  :     " + this.deviceList.size());
-
-        System.out.println("");
-        System.out.println("*******************************************************");
 
         if ((deviceIndex != -1) && (deviceIndex < this.deviceList.size()))
         {
@@ -197,7 +186,6 @@ public class DeviceManager
         System.out.println("filename :   " + filename);
         String fileTocopyPath = unitsDirPath + filename;
         String destination = path + filename;
-
         System.out.println("file To copy Path     " + fileTocopyPath);
         System.out.println("destination   " + destination);
         System.out.println("");

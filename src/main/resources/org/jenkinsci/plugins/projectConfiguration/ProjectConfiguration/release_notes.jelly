@@ -4,8 +4,9 @@
     <j:set var="descriptor" value="${it.descriptor}" />
     <st:bind var="it" value="${it}" />
     <st:bind var="descriptor" value="${it.descriptor}" />
-    <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/testDependencyJS.js" />
+    <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/release_notesJS.js" />
     <script type="text/javascript" src="${rootURL}/plugin/projectConfiguration/jquery-1.11.0.min.js" />
+    
     <l:header/>
     <l:side-panel>
       <l:tasks>
@@ -20,42 +21,38 @@
         <l:task icon="plugin/projectConfiguration/tests-icon.png" href="tests_profiles" title="Tests profiles"/>
         <l:task icon="plugin/projectConfiguration/dependency-icon.png" href="testDependency" title="Tests dependency"/>
         <l:task icon="plugin/projectConfiguration/release_notesIcon.png" href="release_notes" title="Release notes"/>
+        
       </l:tasks>
-  </l:side-panel>
-  <l:main-panel>
-    <H1>${it.getJobName()} Configuration</H1>
-    
-    
-    
-    <H3>Test dependency page</H3>
-     <H3> Current Dependency is : ${it.getNameDepenedency()} </H3>
-    <form action="choseDepenedencyOption" method="post" onsubmit="return validateForm()"> 
-      <table>
-        <j:forEach var="parameterValue" items="${it.getProjectlist()}" varStatus="loop">
-          <tr>
-            <div name="${parameterValue}" id="${parameterValue}" >
-              <f:radioBlock name="projects" value="${parameterValue}" title="${parameterValue}" style="display:none" checked='checkedCheck("${parameterValue}")' />
-            </div>
-          </tr>
-        </j:forEach>
-      </table>
-    <br></br>
-    <br></br>
-  <br></br>
+    </l:side-panel>
+    <l:main-panel>
+      <H1>${
+        it.getJobName()} Release notes </H1>
+      <form action="submitReleaseNotes" method="post" >
         <table>
-
-       <tr>
-           <td>
-            <f:submit value="remove" name="formValue" id="formValue" />
-          </td>
-          <td>
-            <f:submit value="save" name="formValue" id="formValue" />
-          </td>
-        </tr>
-          </table>
-
+          <tr>
+          <tr>
+            <f:entry title="Solved limitations:">
+              
+              <textarea  rows="4" cols="70" name="solved_limitations" id="solved_limitations">
+              </textarea>
+            </f:entry>
+          </tr>
+          <tr>
+            <f:entry title="New limitations:">
+              <textarea rows="4" cols="70" name="new_limitations" id="new_limitations"> "${it.getProjectName()}"
+              </textarea>
+            </f:entry>
+          </tr>         
+        </tr> 
+      </table>
+      <table>
+        <td>
+          <f:submit value="save"  name="formValue" id="formValue"/>
+        </td>
+      </table>
     </form>
-    
   </l:main-panel>
-  </l:layout>
+</l:layout>
 </j:jelly>
+
+
