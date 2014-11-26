@@ -33,6 +33,7 @@ public class MkverConf
     private String jenkinsCCActivity;
 
     // Information used by mkver and edited via Jenkins
+    private String jenkinsProjectName;
     private String projectName;
     private String streamName;
     private String mailingList;
@@ -48,10 +49,11 @@ public class MkverConf
     private String buildDirPath;
     private String userName;
 
-    public MkverConf(String confFilePath)
+    public MkverConf(String confFilePath, String projName)
     {
         this.confFilePath = confFilePath;
         userName = System.getProperty("user.name");
+        jenkinsProjectName = projName;
 
     }
 
@@ -148,21 +150,20 @@ public class MkverConf
     {
         System.out.println("In update view");
         ProcessBuilder pb = new ProcessBuilder().inheritIO();
-        File log = new File("/var/log/jenkins/MkverConf.log");
+        File log = new File("/var/log/jenkins/update.log");
         pb.redirectErrorStream(true);
         pb.redirectOutput(Redirect.appendTo(log));
 
         String[] clearcaseUpdateView =
         {
             this.cleartool, "update", "-force", "-overwrite",
-            "/home/" + userName + "/BuildSystem/cc-views/" + userName + "_" + this.getProjectNameWithoutBashVariables() + "_int"
+            "/home/" + userName + "/BuildSystem/cc-views/" + userName + "_" + jenkinsProjectName + "_int"
         };
         try
         {
             pb.command(clearcaseUpdateView).start().waitFor();
-            System.out.println("COmmand finshed");
+            System.out.println("update finshed");
         } catch (IOException | InterruptedException ex)
-
         {
             System.err.println("Could not update the view");
             Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
@@ -181,11 +182,14 @@ public class MkverConf
         File log = new File("/var/log/jenkins/MkverConf.log");
         pb.redirectErrorStream(true);
         pb.redirectOutput(Redirect.appendTo(log));
+        String viewTag = userName + "_" + this.jenkinsProjectName + "_int";
+        System.out.println("----------------------------");
+        System.out.println("viewTag   -    " + viewTag);
 
         String[] clearcaseSetActivityCMD =
         {
             this.cleartool, "setact", "-view",
-            userName + "_"+ getProjectNameWithoutBashVariables() + "_int", this.jenkinsCCActivity
+            userName + "_" + this.jenkinsProjectName + "_int", this.jenkinsCCActivity
         };
         String[] clearcaseCheckoutCMD =
         {
@@ -200,89 +204,112 @@ public class MkverConf
             this.cleartool, "setact", "-none"
         };
 
+        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        System.out.println(clearcaseSetActivityCMD.length);
+        for (String k : clearcaseSetActivityCMD)
+        {
+            System.out.println(k);
+
+        }
         try
         {
             pb.command(clearcaseSetActivityCMD).start().waitFor();
             pb.command(clearcaseCheckoutCMD).start().waitFor();
 
-            InputStream fis = new FileInputStream(confFilePath);
-            BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
-            while ((line = br.readLine()) != null)
-            {
-                if (line.startsWith("PRJ_NAME=") == true)
-                {
-                    line = "PRJ_NAME=" + this.projectName;
-                } else if (line.startsWith("PRODUCT_NAME=") == true)
-                {
-                    line = "PRODUCT_NAME=" + this.productName;
-                } else if (line.startsWith("STREAM_NAME=") == true)
-                {
-                    line = "STREAM_NAME=" + this.streamName;
-                } else if (line.startsWith("APP_CLEARQUEST_ACTIVITY=") == true)
-                {
-                    line = "APP_CLEARQUEST_ACTIVITY=" + this.ccActivity;
-                } else if (line.startsWith("RESULTS_PATH=") == true)
-                {
-                    line = "RESULTS_PATH=" + this.logsPath;
-                } else if (line.startsWith("G2U_RPM_DOWNLOAD_PATH_BASE=") == true)
-                {
-                    line = "G2U_RPM_DOWNLOAD_PATH_BASE=" + this.rpmPath;
-                } else if (line.startsWith("IMAGE_RELEASE_DIR_BASE=") == true)
-                {
-                    line = "IMAGE_RELEASE_DIR_BASE=" + this.imagePath;
-                } else if (line.startsWith("MAILING_LIST=") == true)
-                {
-                    line = "MAILING_LIST=\"" + this.mailingList + "\"";
-                } else if (line.startsWith("MAILING_LIST_TESTING=") == true)
-                {
-                    line = "MAILING_LIST_TESTING=\"" + this.mailingListTesting + "\"";
-                } else if (line.startsWith("KLOCWORK_PROJECT_NAME=") == true)
-                {
-                    line = "KLOCWORK_PROJECT_NAME=" + this.kwProjectName;
-                } else if (line.startsWith("KLOCWORK_PROJECT_DIR=") == true)
-                {
-                    line = "KLOCWORK_PROJECT_DIR=" + this.kwDirPath;
-                } else if (line.startsWith("IDC_VERSION_FILE=") == true)
-                {
-                    line = "IDC_VERSION_FILE=" + this.idcVersionFilePath;
-                } else if (line.startsWith("PREBUILT_ROOT=") == true)
-                {
-                    line = "PREBUILT_ROOT=" + this.buildDirPath;
-                }
-
-                newFileContent.add(line);
-            }
-
-            br.close();
-
-            PrintWriter pw = new PrintWriter(confFilePath);
-
-            for (String currLine : newFileContent)
-            {
-                pw.println(currLine);
-            }
-
-            pw.close();
-
-        } catch (FileNotFoundException ex)
+        } catch (IOException ex)
         {
             Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException | InterruptedException ex)
+        } catch (InterruptedException ex)
         {
             Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        int indexOfLastSlash = this.confFilePath.lastIndexOf('/');
-        String confFileDir = this.confFilePath.substring(0, indexOfLastSlash);
+        if (new File(confFilePath).canWrite())
+        {
+            try
+            {
+                InputStream fis = new FileInputStream(confFilePath);
+                BufferedReader br = new BufferedReader(new InputStreamReader(fis, Charset.forName("UTF-8")));
+                while ((line = br.readLine()) != null)
+                {
+                    if (line.startsWith("PRJ_NAME=") == true)
+                    {
+                        line = "PRJ_NAME=" + this.projectName;
+                    } else if (line.startsWith("PRODUCT_NAME=") == true)
+                    {
+                        line = "PRODUCT_NAME=" + this.productName;
+                    } else if (line.startsWith("STREAM_NAME=") == true)
+                    {
+                        line = "STREAM_NAME=" + this.streamName;
+                    } else if (line.startsWith("APP_CLEARQUEST_ACTIVITY=") == true)
+                    {
+                        line = "APP_CLEARQUEST_ACTIVITY=" + this.ccActivity;
+                    } else if (line.startsWith("RESULTS_PATH=") == true)
+                    {
+                        line = "RESULTS_PATH=" + this.logsPath;
+                    } else if (line.startsWith("G2U_RPM_DOWNLOAD_PATH_BASE=") == true)
+                    {
+                        line = "G2U_RPM_DOWNLOAD_PATH_BASE=" + this.rpmPath;
+                    } else if (line.startsWith("IMAGE_RELEASE_DIR_BASE=") == true)
+                    {
+                        line = "IMAGE_RELEASE_DIR_BASE=" + this.imagePath;
+                    } else if (line.startsWith("MAILING_LIST=") == true)
+                    {
+                        line = "MAILING_LIST=\"" + this.mailingList + "\"";
+                    } else if (line.startsWith("MAILING_LIST_TESTING=") == true)
+                    {
+                        line = "MAILING_LIST_TESTING=\"" + this.mailingListTesting + "\"";
+                    } else if (line.startsWith("KLOCWORK_PROJECT_NAME=") == true)
+                    {
+                        line = "KLOCWORK_PROJECT_NAME=" + this.kwProjectName;
+                    } else if (line.startsWith("KLOCWORK_PROJECT_DIR=") == true)
+                    {
+                        line = "KLOCWORK_PROJECT_DIR=" + this.kwDirPath;
+                    } else if (line.startsWith("IDC_VERSION_FILE=") == true)
+                    {
+                        line = "IDC_VERSION_FILE=" + this.idcVersionFilePath;
+                    } else if (line.startsWith("PREBUILT_ROOT=") == true)
+                    {
+                        line = "PREBUILT_ROOT=" + this.buildDirPath;
+                    }
 
-        try
+                    newFileContent.add(line);
+                }
+
+                br.close();
+
+                PrintWriter pw = new PrintWriter(confFilePath);
+
+                for (String currLine : newFileContent)
+                {
+                    pw.println(currLine);
+                }
+
+                pw.close();
+
+            } catch (FileNotFoundException ex)
+            {
+                Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex)
+            {
+                Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            int indexOfLastSlash = this.confFilePath.lastIndexOf('/');
+            String confFileDir = this.confFilePath.substring(0, indexOfLastSlash);
+
+            try
+            {
+                pb.command(clearcaseCheckinCMD).start().waitFor();
+                pb.directory(new File(confFileDir)); // needed to unset the activity
+                pb.command(clearcaseUnsetActivityCMD).start().waitFor();
+            } catch (IOException | InterruptedException ex)
+            {
+                Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else
         {
-            pb.command(clearcaseCheckinCMD).start().waitFor();
-            pb.directory(new File(confFileDir)); // needed to unset the activity
-            pb.command(clearcaseUnsetActivityCMD).start().waitFor();
-        } catch (IOException | InterruptedException ex)
-        {
-            Logger.getLogger(MkverConf.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("COULD NOT WRITE!! TO MKVER.CONF");
         }
     }
 
@@ -412,6 +439,9 @@ public class MkverConf
     private String getProjectNameWithoutBashVariables()
     {
         // Not good fails on horizon case consider using the Jenkins project name
+        System.out.println("in getProjectNameWithoutBashVariables");
+        System.out.println("projectName" + projectName);
+        System.out.println("projectName.replaceAll" + this.projectName.replaceAll("\\$\\{.*\\}", ""));
         return this.projectName.replaceAll("\\$\\{.*\\}", "");
     }
 

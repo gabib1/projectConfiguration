@@ -14,14 +14,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -64,7 +63,10 @@ public class ProjectConfiguration implements Action
     private int chosenSlotID = 1;       // This slot ID is to remember the user's choice in the slots page
     private String username = System.getProperty("user.name");
     private String parameterFileDirPath;
+    // This files saved the release notes that change every build
     private String pendingReleaseNotesMarksPath;
+    // This file saves the release notes that are fixed for the all version
+    private String fixedPendingReleaseNotesMarksPath;
 
     public ProjectConfiguration()
     {
@@ -81,12 +83,13 @@ public class ProjectConfiguration implements Action
         // the _int is hard coded although it may be anything, but because we currently don't
         // have our own project we can't store stuff in the freestyle one, this will should be changed
         // as soon as we create our own project type
-        mkverConf = new MkverConf(confFileDir + "/mkver.conf");
+        mkverConf = new MkverConf(confFileDir + "/mkver.conf", this.PROJECTNAME);
         criteriaProperty = new CriteriaProperty(confFileDir + "/criteria.conf");
         parameterFileDirPath = "/home/" + username + "/BuildSystem/cc-views/"
                 + username + "_" + project.getName()
                 + "_int/vobs/linux/CI_Conf/schduledRunsParameters/";
         pendingReleaseNotesMarksPath = confFileDir + "/pendingReleaseNotesMarks.txt";
+        fixedPendingReleaseNotesMarksPath = confFileDir + "/fixedPendingReleaseNotesMarks.txt";
         try
         {
             deviceManager = new DeviceManager(confFileDir + "/Devices");
@@ -1367,6 +1370,7 @@ public class ProjectConfiguration implements Action
 
     /**
      * returns the default parameters of this project
+     *
      * @return List<BooleanParameterDefinition>-defaultParameter
      */
     public List<BooleanParameterDefinition> getParameters()
@@ -1563,34 +1567,60 @@ public class ProjectConfiguration implements Action
         return false;
     }
 
-/**
- * called from the client side , creates a file in ci conf dir , 
- * if the file already exist it will be deleted.
- * in the form of key=value with solved_limitations and new_limitations
- * 
- * @param req
- * @param rsp
- * @throws IOException 
- */
-public void doSubmitReleaseNotes(StaplerRequest req, StaplerResponse rsp) throws IOException 
+    /**
+     * called from the client side , creates a file in ci conf dir , if the file
+     * already exist it will be deleted. in the form of key=value with
+     * solved_limitations and new_limitations
+     *
+     * @param req
+     * @param rsp
+     * @throws IOException
+     */
+    public void doSubmitReleaseNotes(StaplerRequest req, StaplerResponse rsp) throws IOException
     {
-        
+
         System.out.println("IN doSubmitReleaseNotes");
-        File file = new File(pendingReleaseNotesMarksPath);
-        file.delete();
-        PrintWriter pw = new PrintWriter(file);
-        String solved_limitations = "solved_limitations=\"" + req.getParameter("solved_limitations") + "\"";
-        String new_limitations = "new_limitations=\"" + req.getParameter("new_limitations") + "\"";
-        pw.println(solved_limitations);
-        pw.println(new_limitations);
-        pw.flush();
-        pw.close();
+
+        StringBuilder pendingReleaseNotesMarksPathfileContent = new StringBuilder();
+        pendingReleaseNotesMarksPathfileContent.append("solved_limitations=\"" + req.getParameter("solved_limitations") + "\"\n");
+        pendingReleaseNotesMarksPathfileContent.append("new_limitations=\"" + req.getParameter("new_limitations") + "\"");
+        writeToFile(pendingReleaseNotesMarksPath, pendingReleaseNotesMarksPathfileContent.toString());
+
+        String fixedPendingReleaseNotesMarksPathfileContent;
+        fixedPendingReleaseNotesMarksPathfileContent = "additional_information=\"" + req.getParameter("additional_information") + "\"\n";
+        writeToFile(fixedPendingReleaseNotesMarksPath, fixedPendingReleaseNotesMarksPathfileContent.toString());
 
         rsp.sendRedirect2(req.getRootPath() + "/job/" + project.getName() + "/projectConfiguration/release_notes");
     }
 
     /**
-     *return the text written in pendingReleaseNotesMarks file for the given
+     * Creates a new print writer from a the path, Than write the given
+     * fileContent to this pw and close it
+     *
+     * @param path - the path for the new print writer
+     * @parm fileContent - the text to write to this file
+     *
+     */
+    private static void writeToFile(String path, String fileContent)
+    {
+        File file = new File(path);
+        file.delete();
+        PrintWriter pw = null;
+        try
+        {
+            pw = new PrintWriter(file);
+        } catch (FileNotFoundException ex)
+        {
+            System.err.println("Error in  createNewPrintWriter for path : fileName");
+            Logger.getLogger(ProjectConfiguration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        pw.println(fileContent);
+        pw.flush();
+        pw.close();
+    }
+
+    /**
+     * return the text written in pendingReleaseNotesMarks file for the given
      * option
      *
      * @param option - can be (solved_limitations or new_limitations)
@@ -1599,36 +1629,36 @@ public void doSubmitReleaseNotes(StaplerRequest req, StaplerResponse rsp) throws
     @JavaScriptMethod
     public String doGetReleaseNotesText(String option)
     {
-        System.out.println("in doGetReleaseNotesText, ---- option : " + option);
-        String result = null;
-        String[] textParts = null;
-        File file = new File(pendingReleaseNotesMarksPath);
-        if (file.exists())
-        {
-            try
-            {
-                // reds the full file to one string
-                String fileText = new String(Files.readAllBytes(Paths.get(pendingReleaseNotesMarksPath)));
-                textParts = fileText.split("\"");
-            } catch (IOException ex)
-            {
-                System.err.println("Could not read from pendingReleaseNotesMarks File");
-            }
+        System.out.println("in doGetReleaseNotesText ---- option : " + option);
+        String result = "";
 
-            // chose the right text to return
-            switch (option)
-            {
-                case "solved_limitations":
-                    result = textParts[1];
-                    break;
-                case "new_limitations":
-                    result = textParts[3];
-                    break;
-            }
+        // chose the right text to return
+        switch (option)
+        {
+            case "solved_limitations":
+                result = getFileStringInIndex(pendingReleaseNotesMarksPath, 1);
+                break;
+            case "new_limitations":
+                result = getFileStringInIndex(pendingReleaseNotesMarksPath, 3);
+                break;
+            case "additional_information":
+                result = getFileStringInIndex(fixedPendingReleaseNotesMarksPath, 1);
+                break;
         }
-        
         return result;
 
+    }
+
+    private static String getFileStringInIndex(String path, int index)
+    {
+        System.out.println("in getFileStringInIndex");
+        String[] temp = UtilsClass.getTextFromFileAsArray(path);
+        String result = "";
+        if (temp.length > 1)
+        {
+            result = temp[index];
+        }
+        return result;
     }
 
 }

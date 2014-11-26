@@ -30,19 +30,29 @@
       <form action="submitReleaseNotes" method="post" >
         <table>
           <tr>
+
+
           <tr>
-            <f:entry title="Solved limitations:">
-              
-              <textarea  rows="4" cols="70" name="solved_limitations" id="solved_limitations">
+            <f:entry title="Additional information:">  
+              <textarea  rows="4" cols="70" name="additional_information" id="additional_information" title="Additional information will be kept and added to each release notes file">
               </textarea>
             </f:entry>
           </tr>
+
+          <tr>
+            <f:entry title="Solved limitations:">  
+              <textarea  rows="4" cols="70" name="solved_limitations" id="solved_limitations" title="Solved limitations will be deleted after it been added to the release notes">
+              </textarea>
+            </f:entry>
+          </tr>
+
           <tr>
             <f:entry title="New limitations:">
-              <textarea rows="4" cols="70" name="new_limitations" id="new_limitations"> "${it.getProjectName()}"
+              <textarea rows="4" cols="70" name="new_limitations" id="new_limitations" title="New limitations will be deleted after it been added to the release notes">
               </textarea>
             </f:entry>
           </tr>         
+
         </tr> 
       </table>
       <table>

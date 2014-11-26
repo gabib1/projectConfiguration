@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -380,8 +382,8 @@ public class UtilsClass
     }
 
     /**
-     *reads the name of project that we saved in the dependency file
-     * 
+     * reads the name of project that we saved in the dependency file
+     *
      * @param projectName - this project name
      * @throws java.io.IOException
      */
@@ -413,14 +415,14 @@ public class UtilsClass
             br.close();
 
         }
-        System.out.println("dependencyName --- :  "  + dependencyName);
+        System.out.println("dependencyName --- :  " + dependencyName);
         return dependencyName;
     }
 
     /**
      * deletes the dependency file in the given project
-     * 
-     * @param projectName  - the name of the project in which we want to delete 
+     *
+     * @param projectName - the name of the project in which we want to delete
      * the dependency file
      */
     static void removeDependencyFile(String projectName)
@@ -436,4 +438,41 @@ public class UtilsClass
         file.delete();
     }
 
+    /**
+     * This is a helper method that reads the text from the given path and
+     * return it as one string
+     *
+     * @param path - the path of the file
+     * @return fileText - the text of the file in one string
+     */
+    protected static String getTextFromFileAsString(String path)
+    {
+        String fileText = "";
+        File file = new File(path);
+        if (file.exists())
+        {
+            try
+            {
+                // reads the full file to one string
+                fileText = new String(Files.readAllBytes(Paths.get(path)));
+            } catch (IOException ex)
+            {
+                System.err.println("Could not read from " + path);
+            }
+        }
+        return fileText;
+    }
+
+    /**
+     * return the text of the given file as array delimited by "\"
+     *
+     * @param path
+     * @return
+     */
+    protected static String[] getTextFromFileAsArray(String path)
+    {
+        String fileText = getTextFromFileAsString(path);
+        String fileTextasArray[] = fileText.split("\"");
+        return fileTextasArray;
+    }
 }

@@ -487,6 +487,12 @@ public class DeviceManager
      */
     private void validateTestAndDeployFolders() throws IOException
     {
+        File unitDirFile = new File(unitsDirPath);
+        System.out.println(unitsDirPath);
+        if (! (unitDirFile.exists() && unitDirFile.isDirectory()) )
+        {
+            unitDirFile.mkdir();
+        }
         validateFolderExist(this.devicesdToRunDeployOnPath);
         validateFolderExist(this.devicesdToRunTestOnPath);
     }
@@ -519,7 +525,6 @@ public class DeviceManager
             folder.mkdir();
             File unitsDirFile = new File(unitsDirPath);
             File[] listOfFiles = unitsDirFile.listFiles();
-
             for (File file : listOfFiles)
             {
                 if (file.isFile())
